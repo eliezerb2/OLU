@@ -1,0 +1,11 @@
+apiVersion: v2
+name: nexus
+version: 0.1.0
+description: A Helm chart for deploying Nexus Repository Manager
+
+type: application
+
+# This is the minimum version of Kubernetes required to run this chart
+kubeVersion: ">= 1.20.0"
+
+dependencies: []

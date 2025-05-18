@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nexus-scripts
+  labels:
+    app: nexus
+    release: {{ .Release.Name }}
+data:
+  check_nexus_ready.sh: |
+{{ .Files.Get "scripts/check_nexus_ready.sh" | indent 4 }}
+  nexus_initial_login.sh: |
+{{ .Files.Get "scripts/nexus_initial_login.sh" | indent 4 }}
+  set_nexus_password.sh: |
+{{ .Files.Get "scripts/set_nexus_password.sh" | indent 4 }}
+  init_nexus.sh: |
+{{ .Files.Get "scripts/init_nexus.sh" | indent 4 }}

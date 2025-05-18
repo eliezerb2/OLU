@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: sonatype/nexus3
+  # repository: nexus-repo
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8081
+  nodePort: 32009
+
+env:
+  NEXUS_CONTEXT: /nexus
+  ADMIN_USER: admin
+  NEW_PASSWORD: newpassword
+       
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+    cpu: "1"
+
+persistence:
+  enabled: true
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce

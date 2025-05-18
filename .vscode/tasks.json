@@ -1,0 +1,80 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Nexus - Build Docker Image",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                "./build-docker.ps1",
+                "-envFilePath", "./nexus/docker/.env",
+                "-dockerfilePath", "./nexus/docker",
+                "-imageTag", "nexus-repo"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Start Repository",
+            "type": "shell",
+            "command": "helm",
+            "args": [
+            "upgrade",
+            "--install",
+            "nexus-repo",
+            "./nexus/helm",
+            "--values",
+            "./nexus/helm/values.yaml"
+            ],
+            "group": {
+            "kind": "test",
+            "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Stop Repository",
+            "dependsOn": [],
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "helm uninstall nexus-repo; kubectl delete pod -l app.kubernetes.io/name=nexus,app.kubernetes.io/component=admin-password --ignore-not-found"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Stop All",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                "./stop-nexus.ps1"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Deploy and Tail Logs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                "./deploy-and-tail.ps1",
+                "-ReleaseName", "nexus-repo",
+                "-ChartPath", "./nexus/helm",
+                "-ValuesFile", "./nexus/helm/values.yaml"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}
