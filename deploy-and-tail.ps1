@@ -19,24 +19,23 @@ $tailCmd = "kubectl logs -f $pod"
 Write-Host "Tailing logs for pod: $pod"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $tailCmd -WindowStyle Normal -WorkingDirectory . -Verb runAs
 
-# Tail the poststart log in another new PowerShell window
-$logCmd = @"
-`$maxWait = 120
-`$waited = 0
-while ((-not (kubectl exec $pod -- sh -c 'test -f /nexus-data/log/poststart.log')) -and (`$waited -lt `$maxWait)) {
-    Write-Host 'Waiting for /nexus-data/log/poststart.log to be created...'
+# Tail the init_nexus.log log in another new PowerShell window
+$logFilePath = '/nexus-data/init_nexus.log'
+while ($true) {
+    kubectl exec $pod -- sh -c "test -f $logFilePath"
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "$logFilePath found! Proceeding..." -ForegroundColor Green
+        break
+    } 
+    Write-Host "Waiting for $logFilePath to be created..."
     Start-Sleep -Seconds 2
-    `$waited += 2
-}
-if (kubectl exec $pod -- sh -c 'test -f /nexus-data/log/poststart.log') {
-    kubectl exec $pod -- tail -f /nexus-data/log/poststart.log
-} else {
-    Write-Host "poststart.log not found after `$maxWait seconds"
-}
-"@
+} 
 
-Write-Host "Tailing poststart log for pod: $pod"
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $logCmd -WindowStyle Normal -WorkingDirectory . -Verb runAs
+# Tail the logs in a new PowerShell window
+$tailCmd = "kubectl exec $pod -- tail -f $logFilePath"
+Write-Host "Tailing $logFilePath log for pod: $pod"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", $tailCmd -WindowStyle Normal -WorkingDirectory . -Verb runAs
 
 # Start an interactive bash shell in the container
 Write-Host "Starting an interactive bash shell in the pod: $pod"
