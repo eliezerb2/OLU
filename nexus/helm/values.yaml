@@ -1,8 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: sonatype/nexus3
-  # repository: nexus-repo
+  repository: nexus-repo
   tag: "latest"
   pullPolicy: IfNotPresent
 
