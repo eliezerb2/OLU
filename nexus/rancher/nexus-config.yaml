@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nexus-config
-data:
-  NEXUS_PORT: "8081"

@@ -1,64 +1,78 @@
-# Nexus Repository on Rocky Linux
+# Nexus Repository Helm/Kubernetes Automation
 
-This project sets up a Nexus repository using a Docker container based on a Rocky Linux image. It is designed to run using Rancher Desktop, providing a simple and efficient way to manage your Nexus repository.
+This project automates the deployment and management of a Nexus repository using Docker, Helm, and Kubernetes. It includes scripts for admin password automation, lifecycle management, and VS Code tasks for a streamlined developer experience.
 
 ## Project Structure
 
 ```
-nexus-rocky-project
-├── docker
-│   ├── Dockerfile          # Instructions to build the Nexus Docker image
-│   └── nexus-data         # Directory for persistent Nexus data
-├── rancher
-│   └── docker-compose.yaml  # Configuration for running Nexus with Docker Compose
-├── .vscode
-│   ├── launch.json         # Debugging configuration
-│   └── tasks.json          # Workspace tasks
-└── README.md               # Project documentation
+nexus/
+├── docker/
+│   ├── Dockerfile            # Build custom Nexus image (if needed)
+│   └── nexus-data/           # Persistent Nexus data (for local testing)
+├── helm/
+│   ├── Chart.yaml            # Helm chart definition
+│   ├── values.yaml           # Helm values (image, resources, etc.)
+│   ├── scripts/              # Bash scripts for admin automation
+│   │   ├── check_nexus_ready.sh
+│   │   ├── init_nexus.sh
+│   │   ├── nexus_initial_login.sh
+│   │   └── set_nexus_password.sh
+│   └── templates/
+│       ├── deployment.yaml
+│       ├── nexus-scripts-configmap.yaml
+│       ├── pvc.yaml
+│       └── service.yaml
+├── rancher/                  # (Optional) Legacy Docker Compose setup
+│   └── set_admin_credentials.sh
+└── README.md
 ```
 
-## Setup Instructions
+## Quick Start (Helm & Kubernetes)
 
-1. **Clone the Repository**
-   Clone this repository to your local machine.
+1. **Build the Docker Image (if using a custom image):**
 
-   ```bash
-   git clone <repository-url>
-   cd nexus-rocky-project
+   ```powershell
+   # From the workspace root
+   .\build-docker.ps1 -envFilePath .\nexus\docker\.env -dockerfilePath .\nexus\docker -imageTag nexus-repo
    ```
 
-2. **Build the Docker Image**
-   Navigate to the `docker` directory and build the Docker image using the provided Dockerfile.
+   > By default, the Helm chart uses the official `sonatype/nexus3` image. To use your custom image, set `image.repository: nexus-repo` in `values.yaml`.
+   >
+2. **Deploy Nexus with Helm:**
 
-   ```bash
-   cd docker
-   docker build -t nexus-rocky .
+   ```powershell
+   helm upgrade --install nexus-repo ./nexus/helm --values ./nexus/helm/values.yaml
    ```
 
-3. **Run Nexus with Docker Compose**
-   Navigate to the `rancher` directory and start the Nexus repository using Docker Compose.
+   Or use the VS Code task: **Nexus - Start Repository**
+3. **Tail Logs and Monitor:**
+   Use the VS Code task **Nexus - Deploy and Tail Logs** to deploy and open log terminals automatically.
+4. **Access Nexus:**
+   Open [http://localhost:8081](http://localhost:8081) in your browser.
+5. **Stop or Remove Nexus:**
+   Use the VS Code tasks **Nexus - Stop Repository** or **Nexus - Stop All**.
 
-   ```bash
-   cd rancher
-   docker-compose up -d
-   ```
+## Script Automation
 
-4. **Access Nexus**
-   Once the container is running, you can access the Nexus repository by navigating to `http://localhost:8081` in your web browser.
+- All admin automation scripts are available in the running pod at `/scripts` (mounted from a ConfigMap).
+- The container lifecycle `postStart` hook runs `/scripts/init_nexus.sh`, which:
+  1. Waits for Nexus to be ready
+  2. Performs initial admin login
+  3. Sets the admin password
+- Script output is logged to `/nexus-data/init_nexus.log` in the pod.
 
-## Usage
+## Troubleshooting
 
-- To stop the Nexus repository, run:
-
-  ```bash
-  docker-compose down
+- **Permission denied errors:**
+  - Use `emptyDir` for testing, or ensure your PVC supports the correct permissions for the Nexus user.
+- **Scripts not present in container:**
+  - Ensure scripts are in `nexus/helm/scripts/` and referenced in the ConfigMap with the correct path.
+  - Run `helm upgrade --install ...` and restart the pod after changes.
+- **Check which image is running:**
+  ```powershell
+  kubectl get pod <pod-name> -o jsonpath="{.spec.containers[0].image}"
   ```
 
-- For persistent data, ensure that the `nexus-data` directory is properly mapped in the Docker Compose configuration.
+## Contributing
 
-## Additional Information
-
-- For debugging, use the configurations provided in the `.vscode/launch.json` file.
-- You can define custom tasks in the `.vscode/tasks.json` file to streamline your workflow.
-
-Feel free to contribute to this project by submitting issues or pull requests!
+Feel free to submit issues or pull requests!
