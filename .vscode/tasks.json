@@ -7,7 +7,7 @@
             "command": "powershell",
             "args": [
                 "-File",
-                "./build-docker.ps1",
+                ".vscode/build-docker.ps1",
                 "-envFilePath", "./nexus/docker/.env",
                 "-dockerfilePath", "./nexus/docker",
                 "-imageTag", "nexus-repo"
@@ -54,7 +54,7 @@
             "command": "powershell",
             "args": [
                 "-File",
-                "./stop-nexus.ps1"
+                ".vscode/stop-nexus.ps1"
             ],
             "group": "test",
             "problemMatcher": []
@@ -65,7 +65,7 @@
             "command": "powershell",
             "args": [
                 "-File",
-                "./deploy-and-tail.ps1",
+                ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "nexus-repo",
                 "-ChartPath", "./nexus/helm",
                 "-ValuesFile", "./nexus/helm/values.yaml"
