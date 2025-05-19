@@ -23,8 +23,6 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: JENKINS_HTTP_PORT
-              value: "{{ .Values.env.JENKINS_HTTP_PORT | default "8080" }}"
             - name: JENKINS_ADMIN_ID
               value: "admin"
             - name: JENKINS_ADMIN_PASSWORD
@@ -36,10 +34,6 @@ spec:
               value: "{{ .Values.env.ADMIN_USER | default "admin" }}"
             - name: ADMIN_PASSWORD
               value: "{{ .Values.env.ADMIN_PASSWORD | default "admin" }}"
-            - name: CHECK_JENKINS_READY_TIMEOUT
-              value: "{{ .Values.env.CHECK_JENKINS_READY_TIMEOUT | default "300" }}"
-            - name: CHECK_JENKINS_READY_SLEEP
-              value: "{{ .Values.env.CHECK_JENKINS_READY_SLEEP | default "5" }}"
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home

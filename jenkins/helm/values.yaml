@@ -17,8 +17,5 @@ controller:
 adminPassword: "admin"
 resources: {}
 env:
-  JENKINS_HTTP_PORT: 8080
   ADMIN_USER: admin
   ADMIN_PASSWORD: newpassword
-  CHECK_JENKINS_READY_TIMEOUT: 300
-  CHECK_JENKINS_READY_SLEEP: 5
