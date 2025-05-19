@@ -68,13 +68,112 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "nexus-repo",
                 "-ChartPath", "./nexus/helm",
-                "-ValuesFile", "./nexus/helm/values.yaml"
+                "-ValuesFile", "./nexus/helm/values.yaml",
+                "-AppLabel", "nexus",
+                "-LogFilePath", "/nexus-data/init_nexus.log"
             ],
             "group": {
                 "kind": "test",
                 "isDefault": false
             },
             "problemMatcher": []
-        }
+        },
+        {
+            "label": "Jenkins - Deploy",
+            "type": "shell",
+            "command": "helm",
+            "args": [
+                "upgrade",
+                "--install",
+                "jenkins",
+                "./jenkins/helm",
+                "--values",
+                "./jenkins/helm/values.yaml"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Jenkins - Open Pod Shells",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/open-pod-shells.ps1",
+                "-Prefix",
+                "jenkins"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Open Pod Shells",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/open-pod-shells.ps1",
+                "-Prefix",
+                "nexus"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Jenkins - Build Docker Image",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "-t",
+                "jenkins-custom",
+                "./jenkins/docker",
+                // "--no-cache",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Jenkins - Deploy and Tail Logs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/deploy-and-tail.ps1",
+                "-ReleaseName", "jenkins",
+                "-ChartPath", "./jenkins/helm",
+                "-ValuesFile", "./jenkins/helm/values.yaml",
+                "-AppLabel", "jenkins",
+                // "-LogFilePath", "/var/jenkins_home/logs"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Jenkins - Stop",
+            "type": "shell",
+            "command": "helm",
+            "args": [
+                "uninstall",
+                "jenkins"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
     ]
 }
