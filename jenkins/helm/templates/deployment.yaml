@@ -43,21 +43,7 @@ spec:
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
-            - name: jenkins-scripts
-              mountPath: /var/jenkins_home/scripts
-              readOnly: true
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - "/bin/sh"
-                  - "-c"
-                  - "/var/jenkins_home/scripts/init_jenkins.sh &"
       volumes:
         - name: jenkins-home
           persistentVolumeClaim:
             claimName: {{ include "jenkins.fullname" . }}-pvc
-        - name: jenkins-scripts
-          configMap:
-            name: jenkins-scripts
-            defaultMode: 0755

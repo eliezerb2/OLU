@@ -7,8 +7,8 @@ param(
     [string]$LogFilePath
 )
 
-if (-not $ReleaseName -or -not $ChartPath -or -not $ValuesFile -or -not $AppLabel -or -not $LogFilePath) {
-    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <name> -ChartPath <path> -ValuesFile <file> -AppLabel <label> -LogFilePath <path>" -ForegroundColor Yellow
+if (-not $ReleaseName -or -not $ChartPath -or -not $ValuesFile -or -not $AppLabel) {
+    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <name> -ChartPath <path> -ValuesFile <file> -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
     exit 1
 }
 
@@ -28,35 +28,38 @@ $tailCmd = "kubectl logs -f $pod"
 Write-Host "Tailing logs for pod: $pod"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $tailCmd -WindowStyle Normal -WorkingDirectory . -Verb runAs
 
-# Tail the init log in another new PowerShell window (if present)
-$found = $false
-for ($i = 0; $i -lt 10; $i++) {
-    kubectl exec $pod -- sh -c "test -f $LogFilePath"
-    if ($LASTEXITCODE -eq 0) {
-        $found = $true
-        break
+# Only tail the init log if LogFilePath was provided
+if ($LogFilePath) {
+    # Tail the init log in another new PowerShell window (if present)
+    $found = $false
+    for ($i = 0; $i -lt 10; $i++) {
+        kubectl exec $pod -- sh -c "test -f $LogFilePath"
+        if ($LASTEXITCODE -eq 0) {
+            $found = $true
+            break
+        }
+        Start-Sleep -Seconds 2
     }
-    Start-Sleep -Seconds 2
-}
 
-if (-not $found) {
-    Write-Host "Log file not found at $LogFilePath after waiting. Exiting..." -ForegroundColor Red
-    exit 1
-}
-
-while ($true) {
-    kubectl exec $pod -- sh -c "test -f $LogFilePath"
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "$LogFilePath found! Proceeding..." -ForegroundColor Green
-        break
+    if (-not $found) {
+        Write-Host "Log file not found at $LogFilePath after waiting. Exiting..." -ForegroundColor Red
+        exit 1
     }
-    Write-Host "Waiting for $LogFilePath to be created..."
-    Start-Sleep -Seconds 2
-}
 
-$tailCmd = "kubectl exec $pod -- tail -f $LogFilePath"
-Write-Host "Tailing $LogFilePath log for pod: $pod"
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $tailCmd -WindowStyle Normal -WorkingDirectory . -Verb runAs
+    while ($true) {
+        kubectl exec $pod -- sh -c "test -f $LogFilePath"
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "$LogFilePath found! Proceeding..." -ForegroundColor Green
+            break
+        }
+        Write-Host "Waiting for $LogFilePath to be created..."
+        Start-Sleep -Seconds 2
+    }
+
+    $tailCmd = "kubectl exec $pod -- tail -f $LogFilePath"
+    Write-Host "Tailing $LogFilePath log for pod: $pod"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $tailCmd -WindowStyle Normal -WorkingDirectory . -Verb runAs
+}
 
 # Start an interactive bash shell in the container
 Write-Host "Starting an interactive bash shell in the pod: $pod"

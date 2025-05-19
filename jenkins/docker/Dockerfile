@@ -12,6 +12,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Create aliases
+RUN echo "alias ll='ls -l'" >> ~/.bashrc && \
+    echo "alias ll='ls -l'" >> /etc/bash.bashrc
+
 # Create the target directory first to ensure proper permissions
 RUN mkdir -p ${INIT_GROOVY_FOLDER_PATH} && \
     chown ${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} ${INIT_GROOVY_FOLDER_PATH} && \

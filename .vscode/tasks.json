@@ -156,7 +156,7 @@
                 "-ChartPath", "./jenkins/helm",
                 "-ValuesFile", "./jenkins/helm/values.yaml",
                 "-AppLabel", "jenkins",
-                "-LogFilePath", "/var/jenkins_home/logs"
+                // "-LogFilePath", "/var/jenkins_home/logs"
             ],
             "group": {
                 "kind": "test",
@@ -174,6 +174,6 @@
             ],
             "group": "test",
             "problemMatcher": []
-        }
+        },
     ]
 }
