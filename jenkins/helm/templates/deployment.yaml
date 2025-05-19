@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jenkins.fullname" . }}
+  labels:
+    app: {{ include "jenkins.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "jenkins.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "jenkins.name" . }}
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: jenkins
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JENKINS_HTTP_PORT
+              value: "{{ .Values.env.JENKINS_HTTP_PORT | default "8080" }}"
+            - name: JENKINS_ADMIN_ID
+              value: "admin"
+            - name: JENKINS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jenkins.fullname" . }}-admin
+                  key: password
+            - name: ADMIN_USER
+              value: "{{ .Values.env.ADMIN_USER | default "admin" }}"
+            - name: ADMIN_PASSWORD
+              value: "{{ .Values.env.ADMIN_PASSWORD | default "admin" }}"
+            - name: CHECK_JENKINS_READY_TIMEOUT
+              value: "{{ .Values.env.CHECK_JENKINS_READY_TIMEOUT | default "300" }}"
+            - name: CHECK_JENKINS_READY_SLEEP
+              value: "{{ .Values.env.CHECK_JENKINS_READY_SLEEP | default "5" }}"
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: jenkins-scripts
+              mountPath: /var/jenkins_home/scripts
+              readOnly: true
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "/bin/sh"
+                  - "-c"
+                  - "/var/jenkins_home/scripts/init_jenkins.sh &"
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: {{ include "jenkins.fullname" . }}-pvc
+        - name: jenkins-scripts
+          configMap:
+            name: jenkins-scripts
+            defaultMode: 0755

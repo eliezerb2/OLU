@@ -1,0 +1,22 @@
+replicaCount: 1
+image:
+  repository: jenkins-custom
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  port: 8080
+  nodePort: 32008
+persistence:
+  enabled: true
+  storageClass: local-path
+  accessMode: ReadWriteOnce
+  size: 8Gi
+adminPassword: "admin"
+resources: {}
+env:
+  JENKINS_HTTP_PORT: 8080
+  ADMIN_USER: admin
+  ADMIN_PASSWORD: admin
+  CHECK_JENKINS_READY_TIMEOUT: 300
+  CHECK_JENKINS_READY_SLEEP: 5
