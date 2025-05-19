@@ -136,7 +136,8 @@
                 "build",
                 "-t",
                 "jenkins-custom",
-                "./jenkins/docker"
+                "./jenkins/docker",
+                // "--no-cache",
             ],
             "group": {
                 "kind": "build",
@@ -155,7 +156,7 @@
                 "-ChartPath", "./jenkins/helm",
                 "-ValuesFile", "./jenkins/helm/values.yaml",
                 "-AppLabel", "jenkins",
-                "-LogFilePath", "/var/jenkins_home/init_jenkins.log"
+                "-LogFilePath", "/var/jenkins_home/logs"
             ],
             "group": {
                 "kind": "test",
