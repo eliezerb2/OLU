@@ -2,7 +2,9 @@ FROM jenkins/jenkins:lts
 
 # Set environment variables
 ENV INIT_GROOVY_FOLDER_PATH=/usr/share/jenkins/ref/init.groovy.d
+ENV PIPELINES_FOLDER_PATH=/var/jenkins_home/pipelines
 ENV JENKINS_SERVICE_USER=jenkins
+ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 
 USER root
 
@@ -24,7 +26,18 @@ RUN mkdir -p ${INIT_GROOVY_FOLDER_PATH} && \
 # Copy Groovy scripts (note: must be run from directory containing 'groovy' folder)
 COPY --chown=${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} groovy/ ${INIT_GROOVY_FOLDER_PATH}/
 
+# Copy Jenkins pipeline scripts
+COPY --chown=${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} pipelines/ ${PIPELINES_FOLDER_PATH}/
+
 # Verify the copy operation
-RUN ls -la ${INIT_GROOVY_FOLDER_PATH}
+RUN ls -la ${INIT_GROOVY_FOLDER_PATH} && ls -la ${PIPELINES_FOLDER_PATH}
+
+# Install required Jenkins plugins
+RUN jenkins-plugin-cli --plugins \
+    workflow-aggregator \
+    credentials \
+    credentials-binding \
+    plain-credentials \
+    script-security
 
 USER ${JENKINS_SERVICE_USER}

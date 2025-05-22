@@ -4,7 +4,8 @@
 param(
     [string]$envFilePath,  # Path to the .env file
     [string]$dockerfilePath,  # Path to the Dockerfile directory
-    [string]$imageTag  # Docker image tag
+    [string]$imageTag,  # Docker image tag
+    [switch]$NoCache  # Optional: build with --no-cache
 )
 
 # Read the .env file and construct --build-arg parameters if envFilePath is provided
@@ -20,5 +21,6 @@ if ($envFilePath) {
 
 # Build the Docker image
 # Always use the dockerfilePath as the build context (last argument)
-$buildCommand = "docker build $($buildArgs -join ' ') -t $imageTag `"$dockerfilePath`""
+$noCacheArg = if ($NoCache) { '--no-cache' } else { '' }
+$buildCommand = "docker build $noCacheArg $($buildArgs -join ' ') -t $imageTag `"$dockerfilePath`""
 Invoke-Expression $buildCommand

@@ -200,7 +200,8 @@
                 "-File",
                 ".vscode/build-docker.ps1",
                 "-dockerfilePath", "./jenkins-controller/docker",
-                "-imageTag", "jenkins-controller"
+                "-imageTag", "jenkins-controller",
+                // "-NoCache"
             ],
             "group": {
                 "kind": "build",

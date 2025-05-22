@@ -12,8 +12,6 @@ persistence:
   storageClass: local-path
   accessMode: ReadWriteOnce
   size: 8Gi
-controller:
-  javaOpts: "-Djenkins.install.runSetupWizard=false"
 adminPassword: "admin"
 resources: {}
 env:
