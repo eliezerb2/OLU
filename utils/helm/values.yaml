@@ -1,3 +1,7 @@
 env0:
   - name: NEXUS_URL
     value: "http://nexus-repo:8081"
+  - name: NEXUS_ADMIN_USER
+    value: "admin"
+  - name: NEXUS_ADMIN_PASSWORD
+    value: "newpassword"
