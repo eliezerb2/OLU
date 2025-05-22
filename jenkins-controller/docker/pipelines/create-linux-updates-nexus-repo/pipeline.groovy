@@ -2,7 +2,7 @@ pipeline {
     agent any  // Ensures it runs on an available executor (better than 'none' if you want it to run somewhere)
     
     environment {
-        NEXUS_URL = "${env.NEXUS_URL ?: 'http://nexus-repo:8081'}"
+        NEXUS_URL = "${env.NEXUS_URL}"
     }
     
     stages {

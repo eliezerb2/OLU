@@ -7,13 +7,32 @@ param(
     [string]$LogFilePath
 )
 
+Write-Host "[deploy-and-tail.ps1] Parameters:" -ForegroundColor Cyan
+Write-Host "  ReleaseName: $ReleaseName" -ForegroundColor Cyan
+Write-Host "  ChartPath: $ChartPath" -ForegroundColor Cyan
+Write-Host "  ValuesFile: $ValuesFile" -ForegroundColor Cyan
+Write-Host "  AppLabel: $AppLabel" -ForegroundColor Cyan
+Write-Host "  LogFilePath: $LogFilePath" -ForegroundColor Cyan
+
 if (-not $ReleaseName -or -not $ChartPath -or -not $ValuesFile -or -not $AppLabel) {
-    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <name> -ChartPath <path> -ValuesFile <file> -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
+    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <name> -ChartPath <path> -ValuesFile <file1> <file2> ... -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
     exit 1
 }
 
+# Verify that each values file exists and build the --values arguments for Helm
+$ValuesFilesarray = $ValuesFile -split ","
+$valuesArgs = @()
+foreach ($vf in $ValuesFilesarray) {
+    if (-not (Test-Path $vf)) {
+        Write-Host "ERROR: Values file not found: $vf" -ForegroundColor Red
+        exit 2
+    }
+    $valuesArgs += @("--values", $vf)
+}
+Write-Host "Values files: $valuesArgs" -ForegroundColor Cyan
+
 # Deploy or upgrade the Helm release
-helm upgrade --install $ReleaseName $ChartPath --values $ValuesFile
+helm upgrade --install $ReleaseName $ChartPath $valuesArgs
 
 # Wait for the pod to be ready and get the pod name
 $pod = $null

@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        NEXUS_URL = "${env.NEXUS_URL ?: 'http://nexus-repo:8081'}"
+        NEXUS_URL = "${env.NEXUS_URL}"
     }
     stages {
         stage('Delete Linux Updates Repo in Nexus') {

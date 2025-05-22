@@ -14,9 +14,12 @@ persistence:
   size: 8Gi
 adminPassword: "admin"
 resources: {}
-env:
-  ADMIN_USER: admin
-  ADMIN_PASSWORD: newpassword
-  NEXUS_ADMIN_USER: admin
-  NEXUS_ADMIN_PASSWORD: newpassword
-  NEXUS_URL: "http://nexus-repo:8081"
+env1:
+  - name: ADMIN_USER
+    value: "admin"
+  - name: ADMIN_PASSWORD
+    value: "newpassword"
+  - name: NEXUS_ADMIN_USER
+    value: "admin"
+  - name: NEXUS_ADMIN_PASSWORD
+    value: "newpassword"

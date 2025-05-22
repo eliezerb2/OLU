@@ -22,7 +22,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "internal-linux",
                 "-ChartPath", "./internal-linux/helm",
-                "-ValuesFile", "./internal-linux/helm/values.yaml",
+                "-ValuesFile", "./internal-linux/helm/values.yaml", "./utils/helm/values.yaml",
                 "-AppLabel", "internal-linux"
             ],
             "group": {
@@ -57,7 +57,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "updates-downloader",
                 "-ChartPath", "./updates-downloader/helm",
-                "-ValuesFile", "./updates-downloader/helm/values.yaml",
+                "-ValuesFile", "./updates-downloader/helm/values.yaml", "./utils/helm/values.yaml",
                 "-AppLabel", "updates-downloader"
             ],
             "group": {
@@ -150,7 +150,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "nexus-repo",
                 "-ChartPath", "./nexus/helm",
-                "-ValuesFile", "./nexus/helm/values.yaml",
+                "-ValuesFile", "./nexus/helm/values.yaml,./utils/helm/values.yaml",
                 "-AppLabel", "nexus",
                 "-LogFilePath", "/nexus-data/init_nexus.log"
             ],
@@ -218,7 +218,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "jenkins-controller",
                 "-ChartPath", "./jenkins-controller/helm",
-                "-ValuesFile", "./jenkins-controller/helm/values.yaml",
+                "-ValuesFile", "./jenkins-controller/helm/values.yaml,./utils/helm/values.yaml",
                 "-AppLabel", "jenkins-controller"
             ],
             "group": {
