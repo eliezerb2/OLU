@@ -2,6 +2,23 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Updates Downloader - Build Docker Image",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "-t",
+                "updates-downloader",
+                "./updates_downloader/docker",
+                // "--no-cache"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Nexus - Build Docker Image",
             "type": "shell",
             "command": "powershell",
