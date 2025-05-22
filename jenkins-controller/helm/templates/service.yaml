@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jenkins.fullname" . }}
+  name: {{ .Release.Name }}
   labels:
-    app: {{ include "jenkins.name" . }}
+    app: {{ .Release.Name }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -13,4 +13,4 @@ spec:
       name: http
       nodePort: {{ .Values.service.nodePort }}
   selector:
-    app: {{ include "jenkins.name" . }}
+    app: {{ .Release.Name }}

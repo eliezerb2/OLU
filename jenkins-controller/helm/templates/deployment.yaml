@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "jenkins.fullname" . }}
+  name: {{ .Release.Name }}
   labels:
-    app: {{ include "jenkins.name" . }}
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "jenkins.name" . }}
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "jenkins.name" . }}
+        app: {{ .Release.Name }}
     spec:
       securityContext:
         fsGroup: 1000
@@ -28,16 +28,20 @@ spec:
             - name: JENKINS_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "jenkins.fullname" . }}-admin
+                  name: {{ .Release.Name }}-admin
                   key: password
-            - name: ADMIN_USER
-              value: "{{ .Values.env.ADMIN_USER | default "admin" }}"
-            - name: ADMIN_PASSWORD
-              value: "{{ .Values.env.ADMIN_PASSWORD | default "admin" }}"
+            {{- range .Values.env0 }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- range .Values.env1 }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}          
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
       volumes:
         - name: jenkins-home
           persistentVolumeClaim:
-            claimName: {{ include "jenkins.fullname" . }}-pvc
+            claimName: {{ .Release.Name }}-pvc

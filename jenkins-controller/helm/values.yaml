@@ -1,6 +1,6 @@
 replicaCount: 1
 image:
-  repository: jenkins-custom
+  repository: jenkins-controller
   tag: latest
   pullPolicy: IfNotPresent
 service:
@@ -12,10 +12,10 @@ persistence:
   storageClass: local-path
   accessMode: ReadWriteOnce
   size: 8Gi
-controller:
-  javaOpts: "-Djenkins.install.runSetupWizard=false"
 adminPassword: "admin"
 resources: {}
-env:
-  ADMIN_USER: admin
-  ADMIN_PASSWORD: newpassword
+env1:
+  - name: ADMIN_USER
+    value: "admin"
+  - name: ADMIN_PASSWORD
+    value: "newpassword"

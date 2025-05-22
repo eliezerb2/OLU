@@ -22,7 +22,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "internal-linux",
                 "-ChartPath", "./internal-linux/helm",
-                "-ValuesFile", "./internal-linux/helm/values.yaml",
+                "-ValuesFile", "./internal-linux/helm/values.yaml", "./utils/helm/values.yaml",
                 "-AppLabel", "internal-linux"
             ],
             "group": {
@@ -57,7 +57,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "updates-downloader",
                 "-ChartPath", "./updates-downloader/helm",
-                "-ValuesFile", "./updates-downloader/helm/values.yaml",
+                "-ValuesFile", "./updates-downloader/helm/values.yaml", "./utils/helm/values.yaml",
                 "-AppLabel", "updates-downloader"
             ],
             "group": {
@@ -161,24 +161,6 @@
             "problemMatcher": []
         },
         {
-            "label": "Jenkins - Deploy",
-            "type": "shell",
-            "command": "helm",
-            "args": [
-                "upgrade",
-                "--install",
-                "jenkins",
-                "./jenkins/helm",
-                "--values",
-                "./jenkins/helm/values.yaml"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "Jenkins - Open Pod Shells",
             "type": "shell",
             "command": "powershell",
@@ -186,7 +168,7 @@
                 "-File",
                 ".vscode/open-pod-shells.ps1",
                 "-Prefix",
-                "jenkins"
+                "jenkins-controller"
             ],
             "group": {
                 "kind": "test",
@@ -213,16 +195,17 @@
         {
             "label": "Jenkins - Build Docker Image",
             "type": "shell",
-            "command": "docker",
+            "command": "powershell",
             "args": [
-                "build",
-                "-t",
-                "jenkins-custom",
-                "./jenkins/docker"
+                "-File",
+                ".vscode/build-docker.ps1",
+                "-dockerfilePath", "./jenkins-controller/docker",
+                "-imageTag", "jenkins-controller",
+                "-NoCache"
             ],
             "group": {
                 "kind": "build",
-                "isDefault": false
+                "isDefault": true
             },
             "problemMatcher": []
         },
@@ -233,10 +216,10 @@
             "args": [
                 "-File",
                 ".vscode/deploy-and-tail.ps1",
-                "-ReleaseName", "jenkins",
-                "-ChartPath", "./jenkins/helm",
-                "-ValuesFile", "./jenkins/helm/values.yaml",
-                "-AppLabel", "jenkins"
+                "-ReleaseName", "jenkins-controller",
+                "-ChartPath", "./jenkins-controller/helm",
+                "-ValuesFile", "./jenkins-controller/helm/values.yaml,./utils/helm/values.yaml",
+                "-AppLabel", "jenkins-controller"
             ],
             "group": {
                 "kind": "test",
@@ -250,7 +233,7 @@
             "command": "helm",
             "args": [
                 "uninstall",
-                "jenkins"
+                "jenkins-controller"
             ],
             "group": "test",
             "problemMatcher": []
