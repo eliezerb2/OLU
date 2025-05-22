@@ -2,7 +2,7 @@ pipeline {
     agent any  // Ensures it runs on an available executor (better than 'none' if you want it to run somewhere)
     
     environment {
-        NEXUS_URL = 'http://nexus-repo:32009'
+        NEXUS_URL = "${env.NEXUS_URL ?: 'http://nexus-repo:8081'}"
     }
     
     stages {
@@ -10,21 +10,22 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'nexus-admin',
+                        credentialsId: env.NEXUS_ADMIN_CREDENTIALS_ID ?: 'nexus-admin',
                         usernameVariable: 'NEXUS_USER',
                         passwordVariable: 'NEXUS_PASS'
                     )
                 ]) {
                     script {
+                        def pipelinesDir = env.PIPELINES_FOLDER_PATH ?: '/usr/share/jenkins/ref/pipelines'
                         // Use external JSON file for repo config
-                        def repoConfigFile = 'linux-updates-repo.json'
-                        // Copy the JSON file from workspace if not present
-                        if (!fileExists(repoConfigFile)) {
-                            error("${repoConfigFile} not found in workspace!")
-                        }
+                        def repoConfigFile = "${pipelinesDir}/create-linux-updates-nexus-repo/linux-updates-repo.json"
+                        // Debug: check file existence and permissions before curl
+                        sh "ls -l ${repoConfigFile} || echo 'File not found or inaccessible'"
+                        sh "cat ${repoConfigFile} || echo 'Cannot read file'"
+                        // Debug: get full error message from Nexus
                         def curlExitCode = sh(
                             script: """
-                                curl -sS -f -u \${NEXUS_USER}:\${NEXUS_PASS} -X POST \
+                                curl -v -u \${NEXUS_USER}:\${NEXUS_PASS} -X POST \
                                 -H 'Content-Type: application/json' \
                                 --data @${repoConfigFile} \
                                 \${NEXUS_URL}/service/rest/v1/repositories/raw/hosted

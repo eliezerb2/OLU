@@ -3,11 +3,10 @@
   "online": true,
   "storage": {
     "blobStoreName": "default",
-    "strictContentTypeValidation": true
+    "strictContentTypeValidation": true,
+    "writePolicy": "ALLOW"
   },
   "cleanup": {
     "policyNames": []
-  },
-  "type": "raw",
-  "format": "raw"
+  }
 }

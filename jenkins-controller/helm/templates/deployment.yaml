@@ -34,6 +34,12 @@ spec:
               value: "{{ .Values.env.ADMIN_USER | default "admin" }}"
             - name: ADMIN_PASSWORD
               value: "{{ .Values.env.ADMIN_PASSWORD | default "admin" }}"
+            - name: NEXUS_ADMIN_USER
+              value: "{{ .Values.env.NEXUS_ADMIN_USER | default "admin" }}"
+            - name: NEXUS_ADMIN_PASSWORD
+              value: "{{ .Values.env.NEXUS_ADMIN_PASSWORD | default "admin" }}"
+            - name: NEXUS_URL
+              value: {{ .Values.env.NEXUS_URL | default "http://nexus-repo:8081" }}
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
