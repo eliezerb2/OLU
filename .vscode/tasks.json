@@ -2,6 +2,88 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "internal-linux - Stop Repository",
+            "dependsOn": [],
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "helm uninstall internal-linux; kubectl delete pod -l app.kubernetes.io/name=internal-linux,app.kubernetes.io/component=admin-password --ignore-not-found"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "internal-linux - Deploy and Tail Logs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/deploy-and-tail.ps1",
+                "-ReleaseName", "internal-linux",
+                "-ChartPath", "./internal-linux/helm",
+                "-ValuesFile", "./internal-linux/helm/values.yaml",
+                "-AppLabel", "internal-linux"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "internal-linux - Build Docker Image",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "-t",
+                "internal-linux",
+                "./internal-linux/docker",
+                // "--no-cache"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Updates Downloader - Deploy and Tail Logs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/deploy-and-tail.ps1",
+                "-ReleaseName", "updates-downloader",
+                "-ChartPath", "./updates-downloader/helm",
+                "-ValuesFile", "./updates-downloader/helm/values.yaml",
+                "-AppLabel", "updates-downloader"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Updates Downloader - Build Docker Image",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "-t",
+                "updates-downloader",
+                "./updates-downloader/docker",
+                // "--no-cache"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Nexus - Build Docker Image",
             "type": "shell",
             "command": "powershell",
@@ -136,8 +218,7 @@
                 "build",
                 "-t",
                 "jenkins-custom",
-                "./jenkins/docker",
-                // "--no-cache",
+                "./jenkins/docker"
             ],
             "group": {
                 "kind": "build",
@@ -155,8 +236,7 @@
                 "-ReleaseName", "jenkins",
                 "-ChartPath", "./jenkins/helm",
                 "-ValuesFile", "./jenkins/helm/values.yaml",
-                "-AppLabel", "jenkins",
-                // "-LogFilePath", "/var/jenkins_home/logs"
+                "-AppLabel", "jenkins"
             ],
             "group": {
                 "kind": "test",
@@ -175,5 +255,27 @@
             "group": "test",
             "problemMatcher": []
         },
+        {
+            "label": "Updates Downloader - Stop",
+            "type": "shell",
+            "command": "helm",
+            "args": [
+                "uninstall",
+                "updates-downloader"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "All - Stop",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/stop-all.ps1"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        }
     ]
 }
