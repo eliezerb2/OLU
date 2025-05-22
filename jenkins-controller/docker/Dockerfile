@@ -2,7 +2,7 @@ FROM jenkins/jenkins:lts
 
 # Set environment variables
 ENV INIT_GROOVY_FOLDER_PATH=/usr/share/jenkins/ref/init.groovy.d
-ENV PIPELINES_FOLDER_PATH=/var/jenkins_home/pipelines
+ENV PIPELINES_FOLDER_PATH=/usr/share/jenkins/ref/pipelines
 ENV JENKINS_SERVICE_USER=jenkins
 ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 

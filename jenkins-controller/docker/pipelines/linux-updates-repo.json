@@ -1,0 +1,13 @@
+{
+  "name": "linux-updates",
+  "online": true,
+  "storage": {
+    "blobStoreName": "default",
+    "strictContentTypeValidation": true
+  },
+  "cleanup": {
+    "policyNames": []
+  },
+  "type": "raw",
+  "format": "raw"
+}
