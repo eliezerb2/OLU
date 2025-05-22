@@ -7,13 +7,16 @@ param(
     [string]$imageTag  # Docker image tag
 )
 
-# Read the .env file and construct --build-arg parameters
-$buildArgs = Get-Content $envFilePath |
-    Where-Object { $_.Trim() -ne '' -and $_ -match '=' -and $_ -notmatch '^#' } |
-    ForEach-Object {
-        $name, $value = $_ -split '=', 2
-        "--build-arg $name=$value"
-    }
+# Read the .env file and construct --build-arg parameters if envFilePath is provided
+$buildArgs = @()
+if ($envFilePath) {
+    $buildArgs = Get-Content $envFilePath |
+        Where-Object { $_.Trim() -ne '' -and $_ -match '=' -and $_ -notmatch '^#' } |
+        ForEach-Object {
+            $name, $value = $_ -split '=', 2
+            "--build-arg $name=$value"
+        }
+}
 
 # Build the Docker image
 # Always use the dockerfilePath as the build context (last argument)

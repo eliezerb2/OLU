@@ -1,6 +1,6 @@
 replicaCount: 1
 image:
-  repository: jenkins-custom
+  repository: jenkins-controller
   tag: latest
   pullPolicy: IfNotPresent
 service:
