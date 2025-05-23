@@ -16,3 +16,17 @@ resources:
   requests:
     cpu: 50m
     memory: 64Mi
+
+env1:
+  - name: UPDATER_ROCKY_REPO_ID
+    value: "appstream"
+  - name: UPDATER_ROCKY_REPO_URL
+    value: "https://dl.rockylinux.org/pub/rocky/9/AppStream/x86_64/os/"
+  - name: UPDATER_DOWNLOAD_DIR
+    value: "/updates"
+  - name: UPDATER_LOG_FILE
+    value: "/var/log/get-updates.log"
+  - name: UPDATER_ARCH
+    value: "x86_64"
+  - name: UPDATER_TIMEOUT_SECONDS
+    value: "60"

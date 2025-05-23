@@ -2,15 +2,30 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "internal-linux - Stop Repository",
-            "dependsOn": [],
+            "label": "All - Stop",
             "type": "shell",
             "command": "powershell",
             "args": [
-                "-Command",
-                "helm uninstall internal-linux; kubectl delete pod -l app.kubernetes.io/name=internal-linux,app.kubernetes.io/component=admin-password --ignore-not-found"
+                "-File",
+                ".vscode/stop-all.ps1"
             ],
             "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "internal-linux - Build Docker Image",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "-t",
+                "internal-linux",
+                "./internal-linux/docker"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "problemMatcher": []
         },
         {
@@ -32,164 +47,15 @@
             "problemMatcher": []
         },
         {
-            "label": "internal-linux - Build Docker Image",
-            "type": "shell",
-            "command": "docker",
-            "args": [
-                "build",
-                "-t",
-                "internal-linux",
-                "./internal-linux/docker",
-                // "--no-cache"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Updates Downloader - Deploy and Tail Logs",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/deploy-and-tail.ps1",
-                "-ReleaseName", "updates-downloader",
-                "-ChartPath", "./updates-downloader/helm",
-                "-ValuesFile", "./updates-downloader/helm/values.yaml", "./utils/helm/values.yaml",
-                "-AppLabel", "updates-downloader"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Updates Downloader - Build Docker Image",
-            "type": "shell",
-            "command": "docker",
-            "args": [
-                "build",
-                "-t",
-                "updates-downloader",
-                "./updates-downloader/docker",
-                // "--no-cache"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Nexus - Build Docker Image",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/build-docker.ps1",
-                "-envFilePath", "./nexus/docker/.env",
-                "-dockerfilePath", "./nexus/docker",
-                "-imageTag", "nexus-repo"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Nexus - Start Repository",
-            "type": "shell",
-            "command": "helm",
-            "args": [
-            "upgrade",
-            "--install",
-            "nexus-repo",
-            "./nexus/helm",
-            "--values",
-            "./nexus/helm/values.yaml"
-            ],
-            "group": {
-            "kind": "test",
-            "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Nexus - Stop Repository",
+            "label": "internal-linux - Stop Repository",
             "dependsOn": [],
             "type": "shell",
             "command": "powershell",
             "args": [
                 "-Command",
-                "helm uninstall nexus-repo; kubectl delete pod -l app.kubernetes.io/name=nexus,app.kubernetes.io/component=admin-password --ignore-not-found"
+                "helm uninstall internal-linux; kubectl delete pod -l app.kubernetes.io/name=internal-linux,app.kubernetes.io/component=admin-password --ignore-not-found"
             ],
             "group": "test",
-            "problemMatcher": []
-        },
-        {
-            "label": "Nexus - Stop All",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/stop-nexus.ps1"
-            ],
-            "group": "test",
-            "problemMatcher": []
-        },
-        {
-            "label": "Nexus - Deploy and Tail Logs",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/deploy-and-tail.ps1",
-                "-ReleaseName", "nexus-repo",
-                "-ChartPath", "./nexus/helm",
-                "-ValuesFile", "./nexus/helm/values.yaml",
-                "-AppLabel", "nexus",
-                "-LogFilePath", "/nexus-data/init_nexus.log"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Jenkins - Open Pod Shells",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/open-pod-shells.ps1",
-                "-Prefix",
-                "jenkins-controller"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Nexus - Open Pod Shells",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/open-pod-shells.ps1",
-                "-Prefix",
-                "nexus"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
             "problemMatcher": []
         },
         {
@@ -228,6 +94,22 @@
             "problemMatcher": []
         },
         {
+            "label": "Jenkins - Open Pod Shells",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/open-pod-shells.ps1",
+                "-Prefix",
+                "jenkins-controller"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Jenkins - Stop",
             "type": "shell",
             "command": "helm",
@@ -239,23 +121,140 @@
             "problemMatcher": []
         },
         {
+            "label": "Nexus - Build Docker Image",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/build-docker.ps1",
+                "-envFilePath", "./nexus/docker/.env",
+                "-dockerfilePath", "./nexus/docker",
+                "-imageTag", "nexus-repo"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Deploy and Tail Logs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/deploy-and-tail.ps1",
+                "-ReleaseName", "nexus-repo",
+                "-ChartPath", "./nexus/helm",
+                "-ValuesFile", "./nexus/helm/values.yaml",
+                "-AppLabel", "nexus",
+                "-LogFilePath", "/nexus-data/init_nexus.log"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Open Pod Shells",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/open-pod-shells.ps1",
+                "-Prefix",
+                "nexus"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Start Repository",
+            "type": "shell",
+            "command": "helm",
+            "args": [
+                "upgrade",
+                "--install",
+                "nexus-repo",
+                "./nexus/helm",
+                "--values",
+                "./nexus/helm/values.yaml"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Stop All",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/stop-nexus.ps1"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Nexus - Stop Repository",
+            "dependsOn": [],
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "helm uninstall nexus-repo; kubectl delete pod -l app.kubernetes.io/name=nexus,app.kubernetes.io/component=admin-password --ignore-not-found"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Updates Downloader - Build Docker Image",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/build-docker.ps1",
+                "-dockerfilePath", "./updates-downloader/docker",
+                "-imageTag", "updates-downloader",
+                "-NoCache"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Updates Downloader - Deploy and Tail Logs",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/deploy-and-tail.ps1",
+                "-ReleaseName", "updates-downloader",
+                "-ChartPath", "./updates-downloader/helm",
+                "-ValuesFile", "./updates-downloader/helm/values.yaml,./utils/helm/values.yaml",
+                "-AppLabel", "updates-downloader"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Updates Downloader - Stop",
             "type": "shell",
             "command": "helm",
             "args": [
                 "uninstall",
                 "updates-downloader"
-            ],
-            "group": "test",
-            "problemMatcher": []
-        },
-        {
-            "label": "All - Stop",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/stop-all.ps1"
             ],
             "group": "test",
             "problemMatcher": []

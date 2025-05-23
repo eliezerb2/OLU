@@ -20,3 +20,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            {{- range .Values.env0 }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- range .Values.env1 }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
