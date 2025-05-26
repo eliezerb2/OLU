@@ -1,0 +1,6 @@
+Port $UPDATES_DOWNLOADER_SSH_PORT
+PermitRootLogin no
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM yes
+X11Forwarding no

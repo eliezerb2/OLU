@@ -8,8 +8,14 @@ RUN dnf update -y && \
     rm -rf /var/cache/dnf
 
 # Install reposync dependency
-RUN dnf install -y dnf-utils && \
-    dnf clean all && \
+RUN dnf install -y dnf-utils
+
+# Install openssh-server
+RUN dnf install -y openssh-server
+RUN mkdir -p /var/run/sshd
+
+# Clear package cache
+RUN dnf clean all && \
     rm -rf /var/cache/dnf
 
 # Create aliases
@@ -22,4 +28,6 @@ COPY files/ /
 # Ensure get-updates.sh is executable
 RUN chmod +x ${UPDATER_COMMAND}
 
-ENTRYPOINT ["sh", "-c", "while true; do date; sleep 3; done"]
+# Start sshd in the background, then endlessly output the date
+# TODO: temporary solution - keys should be generated securely
+ENTRYPOINT ["sh", "-c", "ssh-keygen -A && /usr/sbin/sshd && while true; do date; sleep 3; done"]
