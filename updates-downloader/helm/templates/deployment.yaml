@@ -32,6 +32,34 @@ spec:
           volumeMounts:
             - name: ssh-ed25519-key
               mountPath: /ssh-keys
+        - name: copy-ssh-keys
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              cp /ssh-keys/ssh_host_ed25519_key /ssh-writable/ && \
+              cp /ssh-keys/ssh_host_ed25519_key.pub /ssh-writable/ && \
+              chmod 600 /ssh-writable/ssh_host_ed25519_key && \
+              chmod 644 /ssh-writable/ssh_host_ed25519_key.pub
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /ssh-keys
+            - name: ssh-writable
+              mountPath: /ssh-writable
+        - name: setup-jenkins-authorized-keys
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              useradd -m -s /bin/sh {{ .Values.updatesDownloader.sshJenkinsUsername }} 2>/dev/null || true
+              mkdir -p /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
+              cat /jenkins-public-key/authorized_keys > /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
+              chown -R {{ .Values.updatesDownloader.sshJenkinsUsername }}: /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
+              chmod 700 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
+              chmod 600 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
+          volumeMounts:
+            - name: jenkins-public-key
+              mountPath: /jenkins-public-key
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -47,16 +75,28 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}
+            - name: UPDATES_DOWNLOADER_SSH_PORT
+              value: "{{ .Values.updatesDownloader.sshPort }}"
+          ports:
+            - containerPort: {{ .Values.updatesDownloader.sshPort }}
           volumeMounts:
-            - name: ssh-ed25519-key
+            - name: ssh-writable
               mountPath: /etc/ssh/ssh_host_ed25519_key
               subPath: ssh_host_ed25519_key
               readOnly: true
-            - name: ssh-ed25519-key
+            - name: ssh-writable
               mountPath: /etc/ssh/ssh_host_ed25519_key.pub
               subPath: ssh_host_ed25519_key.pub
+              readOnly: true
+            - name: jenkins-public-key
+              mountPath: /jenkins-public-key
               readOnly: true
       volumes:
         - name: ssh-ed25519-key
           secret:
             secretName: {{ .Values.updatesDownloader.sshKeySecretName }}
+        - name: ssh-writable
+          emptyDir: {}
+        - name: jenkins-public-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.jenkinsPublicKeySecretName }}

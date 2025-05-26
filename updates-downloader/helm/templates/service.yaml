@@ -11,5 +11,9 @@ spec:
       targetPort: 80
       protocol: TCP
       name: http
+    - port: {{ .Values.updatesDownloader.sshPort }}
+      targetPort: {{ .Values.updatesDownloader.sshPort }}
+      protocol: TCP
+      name: ssh
   selector:
     app: {{ .Release.Name }}

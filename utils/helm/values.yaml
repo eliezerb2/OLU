@@ -5,7 +5,9 @@ env0:
     value: "admin"
   - name: NEXUS_ADMIN_PASSWORD
     value: "newpassword"
-  - name: UPDATES_DOWNLOADER_SSH_PORT
-    value: "2222"
 updatesDownloader:
+  sshPort: 2222
+  sshJenkinsUsername: jenkins
   sshKeySecretName: updates-downloader-ssh-host-keys
+  jenkinsPrivateKeySecretName: jenkins-ssh-private-key
+  jenkinsPublicKeySecretName: jenkins-ssh-public-key

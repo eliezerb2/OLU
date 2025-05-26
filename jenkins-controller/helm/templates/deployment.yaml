@@ -38,10 +38,37 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}          
+            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
+              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
+            - name: jenkins-ssh-key
+              mountPath: /var/jenkins_home/.ssh/id_ed25519
+              subPath: id_ed25519
+              readOnly: true
       volumes:
+        - name: jenkins-ssh-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }}
         - name: jenkins-home
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-pvc
+        - name: ssh-ed25519-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.sshKeySecretName }}
+        - name: jenkins-ssh-dir
+          emptyDir: {}
+      initContainers:
+        - name: copy-jenkins-ssh-key
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              cp /ssh-keys/ssh_host_ed25519_key /jenkins-ssh/id_ed25519 && \
+              chmod 600 /jenkins-ssh/id_ed25519
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /ssh-keys
+            - name: jenkins-ssh-dir
+              mountPath: /jenkins-ssh
