@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-generate-ssh-keys
+  labels:
+    app: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-10"
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.sshKeygenJob.name }}
+      restartPolicy: OnFailure
+      containers:
+        - name: ssh-keygen
+          image: "{{ .Values.sshKeygenJob.image.repository }}:{{ .Values.sshKeygenJob.image.tag }}"
+          imagePullPolicy: {{ .Values.sshKeygenJob.image.imagePullPolicy}}
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -e
+              mkdir -p /etc/ssh && \
+              ssh-keygen -A && \
+              # Store only the ed25519 key in the Secret for ssh clients
+              kubectl create secret generic {{ .Values.updatesDownloader.sshKeySecretName }} \
+                --from-file=ssh_host_ed25519_key=/etc/ssh/ssh_host_ed25519_key \
+                --from-file=ssh_host_ed25519_key.pub=/etc/ssh/ssh_host_ed25519_key.pub \
+                --dry-run=client -o yaml | kubectl apply -f -

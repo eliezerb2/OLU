@@ -14,6 +14,24 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: wait-for-ssh-keys
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              for i in $(seq 1 60); do
+                if [ -f /ssh-keys/ssh_host_ed25519_key ]; then
+                  exit 0
+                fi
+                echo "Waiting for SSH host keys Secret..."
+                sleep 2
+              done
+              echo "SSH host keys Secret not found!" >&2
+              exit 1
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /ssh-keys
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -29,3 +47,16 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /etc/ssh/ssh_host_ed25519_key
+              subPath: ssh_host_ed25519_key
+              readOnly: true
+            - name: ssh-ed25519-key
+              mountPath: /etc/ssh/ssh_host_ed25519_key.pub
+              subPath: ssh_host_ed25519_key.pub
+              readOnly: true
+      volumes:
+        - name: ssh-ed25519-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.sshKeySecretName }}

@@ -251,12 +251,28 @@
         {
             "label": "Updates Downloader - Stop",
             "type": "shell",
-            "command": "helm",
+            "command": "powershell",
             "args": [
-                "uninstall",
-                "updates-downloader"
+                "-File",
+                ".vscode/stop-updates-downloader.ps1"
             ],
             "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Create SSH Secret Docker - Build Docker Image",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "-t",
+                "create-ssh-secret",
+                "./utils/create-ssh-secret-docker"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "problemMatcher": []
         }
     ]

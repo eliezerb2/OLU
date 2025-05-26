@@ -7,3 +7,5 @@ env0:
     value: "newpassword"
   - name: UPDATES_DOWNLOADER_SSH_PORT
     value: "2222"
+updatesDownloader:
+  sshKeySecretName: updates-downloader-ssh-host-keys
