@@ -11,6 +11,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy scripts and files from docker/files to their corresponding locations in the image
-COPY files /
+COPY files/ /
 
 RUN chmod +x /scripts/generate-ssh-secrets.sh

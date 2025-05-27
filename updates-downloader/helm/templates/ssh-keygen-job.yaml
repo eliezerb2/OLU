@@ -29,5 +29,6 @@ spec:
               export JENKINS_PUBLIC_KEY_SECRET={{ .Values.updatesDownloader.jenkinsPublicKeySecretName }}
               export UPDATES_DOWNLOADER_KNOWN_HOSTS_SECRET={{ .Values.updatesDownloader.knownHostsSecretName }}
               /scripts/generate-ssh-secrets.sh
-        - name: UPDATES_DOWNLOADER_HOST
-          value: "updates-downloader"
+          env:
+            - name: UPDATES_DOWNLOADER_HOST
+              value: "updates-downloader"
