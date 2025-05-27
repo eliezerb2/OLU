@@ -23,36 +23,11 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              set -e
-              # Create the Jenkins SSH user and home if not present
-              id {{ .Values.updatesDownloader.sshJenkinsUsername }} 2>/dev/null || useradd -m -s /bin/sh {{ .Values.updatesDownloader.sshJenkinsUsername }}
-              mkdir -p /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
-              chown -R {{ .Values.updatesDownloader.sshJenkinsUsername }}: /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}
-              chmod 700 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
-              # Generate SSH host keys
-              mkdir -p /etc/ssh
-              ssh-keygen -A
-              # Generate Jenkins user keypair
-              ssh-keygen -t ed25519 -f /tmp/jenkins_id_ed25519 -N ""
-              # Always delete and recreate Secrets to ensure sync
-              kubectl delete secret {{ .Values.updatesDownloader.sshKeySecretName }} --ignore-not-found
-              kubectl delete secret {{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }} --ignore-not-found
-              kubectl delete secret {{ .Values.updatesDownloader.jenkinsPublicKeySecretName }} --ignore-not-found
-              # Create Secret for SSH host keys
-              kubectl create secret generic {{ .Values.updatesDownloader.sshKeySecretName }} \
-                --from-file=ssh_host_ed25519_key=/etc/ssh/ssh_host_ed25519_key \
-                --from-file=ssh_host_ed25519_key.pub=/etc/ssh/ssh_host_ed25519_key.pub \
-                --dry-run=client -o yaml | kubectl apply -f -
-              # Create Secret for Jenkins private key
-              kubectl create secret generic {{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }} \
-                --from-file=id_ed25519=/tmp/jenkins_id_ed25519 \
-                --dry-run=client -o yaml | kubectl apply -f -
-              # Create Secret for Jenkins public key (as authorized_keys)
-              cp /tmp/jenkins_id_ed25519.pub /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
-              chown {{ .Values.updatesDownloader.sshJenkinsUsername }}: /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
-              chmod 600 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
-              kubectl create secret generic {{ .Values.updatesDownloader.jenkinsPublicKeySecretName }} \
-                --from-file=authorized_keys=/home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys \
-                --dry-run=client -o yaml | kubectl apply -f -
-              # Clean up
-              rm -f /tmp/jenkins_id_ed25519 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
+              export JENKINS_SSH_USER_NAME={{ .Values.updatesDownloader.sshJenkinsUsername }}
+              export SSH_HOST_KEY_SECRET={{ .Values.updatesDownloader.sshKeySecretName }}
+              export JENKINS_PRIVATE_KEY_SECRET={{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }}
+              export JENKINS_PUBLIC_KEY_SECRET={{ .Values.updatesDownloader.jenkinsPublicKeySecretName }}
+              export UPDATES_DOWNLOADER_KNOWN_HOSTS_SECRET={{ .Values.updatesDownloader.knownHostsSecretName }}
+              /scripts/generate-ssh-secrets.sh
+        - name: UPDATES_DOWNLOADER_HOST
+          value: "updates-downloader"

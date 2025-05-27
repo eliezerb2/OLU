@@ -47,6 +47,10 @@ spec:
               mountPath: /var/jenkins_home/.ssh/id_ed25519
               subPath: id_ed25519
               readOnly: true
+            - name: jenkins-known-hosts
+              mountPath: /var/jenkins_home/.ssh/known_hosts
+              subPath: known_hosts
+              readOnly: true
       volumes:
         - name: jenkins-ssh-key
           secret:
@@ -54,6 +58,9 @@ spec:
         - name: jenkins-home
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-pvc
+        - name: jenkins-known-hosts
+          secret:
+            secretName: {{ .Values.updatesDownloader.knownHostsSecretName }}
         - name: ssh-ed25519-key
           secret:
             secretName: {{ .Values.updatesDownloader.sshKeySecretName }}
