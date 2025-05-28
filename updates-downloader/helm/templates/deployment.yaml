@@ -46,20 +46,6 @@ spec:
               mountPath: /ssh-keys
             - name: ssh-writable
               mountPath: /ssh-writable
-        - name: setup-jenkins-authorized-keys
-          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
-          command: ["sh", "-c"]
-          args:
-            - |
-              useradd -m -s /bin/sh {{ .Values.updatesDownloader.sshJenkinsUsername }} 2>/dev/null || true
-              mkdir -p /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
-              cat /jenkins-public-key/authorized_keys > /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
-              chown -R {{ .Values.updatesDownloader.sshJenkinsUsername }}: /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
-              chmod 700 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh
-              chmod 600 /home/{{ .Values.updatesDownloader.sshJenkinsUsername }}/.ssh/authorized_keys
-          volumeMounts:
-            - name: jenkins-public-key
-              mountPath: /jenkins-public-key
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -77,6 +63,8 @@ spec:
             {{- end }}
             - name: UPDATES_DOWNLOADER_SSH_PORT
               value: "{{ .Values.updatesDownloader.sshPort }}"
+            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
+              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
           ports:
             - containerPort: {{ .Values.updatesDownloader.sshPort }}
           volumeMounts:

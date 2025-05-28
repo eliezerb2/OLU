@@ -26,10 +26,10 @@ RUN echo "alias ll='ls -l'" >> ~/.bashrc && \
     echo "alias ll='ls -l'" >> /etc/bash.bashrc
 
 # Copy scripts and files from docker/files to their corresponding locations in the image
-COPY files /
+COPY files/ /
 
-# Ensure get-updates.sh is executable
-RUN chmod +x ${UPDATER_COMMAND}
+# Ensure scripts are executable
+RUN find /app -type f -name "*.sh" -exec chmod +x {} \;
 
-# Start sshd in the background, then endlessly output the date
-ENTRYPOINT ["sh", "-c", "/usr/sbin/sshd -p $UPDATES_DOWNLOADER_SSH_PORT && while true; do date; sleep 3; done"]
+# Use the new entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
