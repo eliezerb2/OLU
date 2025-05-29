@@ -25,10 +25,10 @@ pipeline {
                         // Debug: get full error message from Nexus
                         def curlExitCode = sh(
                             script: """
-                                curl -v -u \${NEXUS_USER}:\${NEXUS_PASS} -X POST \
-                                -H 'Content-Type: application/json' \
-                                --data @${repoConfigFile} \
-                                \${NEXUS_URL}/service/rest/v1/repositories/raw/hosted
+                                curl -v -u \${NEXUS_USER}:\${NEXUS_PASS} -X POST \\
+                                -H 'Content-Type: application/json' \\
+                                --data @${repoConfigFile} \\
+                                \${NEXUS_URL}/service/rest/v1/repositories/yum/hosted
                             """,
                             returnStatus: true
                         )
