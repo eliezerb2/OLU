@@ -1,36 +1,27 @@
-// Jenkins pipeline to trigger updates-downloader pod to fetch UBI updates from a public source
+// Jenkins pipeline to SSH into updates-downloader and run get-updates.sh
 // Parameterized for maintainability
 
-def POD_LABEL = env.UPDATES_DOWNLOADER_LABEL ?: env.UPDATER_POD_LABEL ?: 'app=updates-downloader'
-def NAMESPACE = env.UPDATES_DOWNLOADER_NAMESPACE ?: env.UPDATER_NAMESPACE ?: 'default'
-def CONTAINER_NAME = env.UPDATES_DOWNLOADER_CONTAINER ?: env.UPDATER_CONTAINER_NAME ?: 'updates-downloader'
-def FETCH_COMMAND = env.UPDATES_DOWNLOADER_COMMAND ?: env.UPDATER_FETCH_COMMAND ?: '/app/get-updates.sh'
+def SSH_USER = env.UPDATES_DOWNLOADER_SSH_USER ?: 'jenkins'
+def SSH_HOST = env.UPDATES_DOWNLOADER_SSH_HOST ?: 'updates-downloader'
+def SSH_PORT = env.UPDATES_DOWNLOADER_SSH_PORT ?: '2222'
+def REMOTE_COMMAND = env.UPDATES_DOWNLOADER_COMMAND ?: '/app/get-updates.sh'
+def SSH_KEY_PATH = env.UPDATES_DOWNLOADER_SSH_KEY_PATH ?: '~/.ssh/id_ed25519'
 
-def getPodName(label, namespace) {
-    def podName = sh(
-        script: "kubectl get pods -n ${namespace} -l ${label} -o jsonpath='{.items[0].metadata.name}'",
-        returnStdout: true
-    ).trim()
-    if (!podName) {
-        error "No pod found with label ${label} in namespace ${namespace}"
-    }
-    return podName
-}
+def sshCmd = "ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=yes -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} '${REMOTE_COMMAND}'"
+
+def logCmd = "ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=yes -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} 'tail -n 100 /var/log/get-updates.log'"
 
 pipeline {
     agent any
     stages {
-        stage('Fetch UBI Updates') {
+        stage('Fetch UBI Updates via SSH') {
             steps {
                 script {
-                    echo "Locating updates-downloader pod..."
-                    def podName = getPodName(POD_LABEL, NAMESPACE)
-                    echo "Found pod: ${podName}"
-                    echo "Running update fetch command: ${FETCH_COMMAND}"
+                    echo "Running update fetch command on ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
                     try {
-                        sh "kubectl exec -n ${NAMESPACE} ${podName} -c ${CONTAINER_NAME} -- ${FETCH_COMMAND}"
+                        sh sshCmd
                     } catch (err) {
-                        error "Failed to fetch updates: ${err}"
+                        error "Failed to fetch updates via SSH: ${err}"
                     }
                 }
             }
@@ -38,10 +29,9 @@ pipeline {
     }
     post {
         failure {
-            echo 'Update fetch failed. Check pod logs for details.'
+            echo 'Update fetch failed. Fetching remote log for details.'
             script {
-                def podName = getPodName(POD_LABEL, NAMESPACE)
-                sh "kubectl logs -n ${NAMESPACE} ${podName} -c ${CONTAINER_NAME} --tail=100 || true"
+                sh logCmd
             }
         }
     }

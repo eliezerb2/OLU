@@ -5,6 +5,8 @@ set -euo pipefail
 # All required environment variables must be set by the environment (Helm values)
 # No default assignments here
 
+# TODO: use logging library
+
 mkdir -p "$UPDATER_DOWNLOAD_DIR"
 
 {
