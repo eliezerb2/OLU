@@ -37,7 +37,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "internal-linux",
                 "-ChartPath", "./internal-linux/helm",
-                "-ValuesFile", "./internal-linux/helm/values.yaml", "./utils/helm/values.yaml",
+                "-ValuesFile", "./internal-linux/helm/values.yaml,./utils/helm/values.yaml",
                 "-AppLabel", "internal-linux"
             ],
             "group": {
@@ -47,7 +47,7 @@
             "problemMatcher": []
         },
         {
-            "label": "internal-linux - Stop Repository",
+            "label": "internal-linux - Stop",
             "dependsOn": [],
             "type": "shell",
             "command": "powershell",
