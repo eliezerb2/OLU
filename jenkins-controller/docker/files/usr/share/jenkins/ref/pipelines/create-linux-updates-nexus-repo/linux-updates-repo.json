@@ -1,6 +1,8 @@
 {
   "name": "linux-updates",
   "online": true,
+  "format": "yum",
+  "type": "hosted",
   "storage": {
     "blobStoreName": "default",
     "strictContentTypeValidation": true,
@@ -8,5 +10,9 @@
   },
   "cleanup": {
     "policyNames": []
+  },
+  "yum": {
+    "repodataDepth": 0,
+    "deployPolicy": "STRICT"
   }
 }
