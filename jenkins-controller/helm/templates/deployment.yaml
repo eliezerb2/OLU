@@ -38,10 +38,60 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}          
+            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
+              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
+      initContainers:
+        - name: setup-ssh
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              # Remove any existing SSH keys
+              rm -rf /var/jenkins_home/.ssh
+              
+              mkdir -p /var/jenkins_home/.ssh
+              chmod 700 /var/jenkins_home/.ssh
+              
+              # Copy SSH key with proper permissions
+              cp /ssh-key/id_ed25519 /var/jenkins_home/.ssh/id_ed25519
+              chmod 600 /var/jenkins_home/.ssh/id_ed25519
+              
+              # Copy known_hosts with proper permissions
+              cp /known-hosts/known_hosts /var/jenkins_home/.ssh/known_hosts
+              chmod 644 /var/jenkins_home/.ssh/known_hosts
+              
+              # Create SSH config
+              echo "Host updates-downloader" > /var/jenkins_home/.ssh/config
+              echo "  HostName updates-downloader" >> /var/jenkins_home/.ssh/config
+              echo "  Port {{ .Values.updatesDownloader.sshPort }}" >> /var/jenkins_home/.ssh/config
+              echo "  User {{ .Values.updatesDownloader.sshJenkinsUsername }}" >> /var/jenkins_home/.ssh/config
+              echo "  IdentityFile /var/jenkins_home/.ssh/id_ed25519" >> /var/jenkins_home/.ssh/config
+              echo "  StrictHostKeyChecking yes" >> /var/jenkins_home/.ssh/config
+              chmod 600 /var/jenkins_home/.ssh/config
+              
+              # Set proper ownership for all files
+              chown -R 1000:1000 /var/jenkins_home/.ssh
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: jenkins-ssh-key
+              mountPath: /ssh-key
+              readOnly: true
+            - name: jenkins-known-hosts
+              mountPath: /known-hosts
+              readOnly: true
       volumes:
+        - name: jenkins-ssh-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }}
+            defaultMode: 0600
         - name: jenkins-home
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-pvc
+        - name: jenkins-known-hosts
+          secret:
+            secretName: {{ .Values.updatesDownloader.knownHostsSecretName }}
+            defaultMode: 0644

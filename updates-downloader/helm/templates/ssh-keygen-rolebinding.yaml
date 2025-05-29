@@ -1,0 +1,18 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.sshKeygenJob.name }}
+  namespace: default  # Explicitly set namespace
+  labels:
+    app: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-20"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.sshKeygenJob.name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.sshKeygenJob.name }}
+  namespace: default  # Explicitly set namespace

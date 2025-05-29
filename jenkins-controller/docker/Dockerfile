@@ -1,11 +1,11 @@
 FROM jenkins/jenkins:lts
 
-# Set environment variables
-ENV INIT_GROOVY_FOLDER_PATH=/usr/share/jenkins/ref/init.groovy.d
-ENV PIPELINES_FOLDER_PATH=/usr/share/jenkins/ref/pipelines
 ENV JENKINS_SERVICE_USER=jenkins
 ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 ENV NEXUS_ADMIN_CREDENTIALS_ID=nexus-admin
+ENV KUBECTL_VERSION=1.29.3
+ENV KUBECTL_BIN_PATH=/usr/local/bin/kubectl
+ENV KUBECTL_DOWNLOAD_URL="https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
 
 USER root
 
@@ -19,19 +19,8 @@ RUN apt-get update && \
 RUN echo "alias ll='ls -l'" >> ~/.bashrc && \
     echo "alias ll='ls -l'" >> /etc/bash.bashrc
 
-# Create the target directory first to ensure proper permissions
-RUN mkdir -p ${INIT_GROOVY_FOLDER_PATH} && \
-    chown ${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} ${INIT_GROOVY_FOLDER_PATH} && \
-    chmod 755 ${INIT_GROOVY_FOLDER_PATH}
-
-# Copy Groovy scripts (note: must be run from directory containing 'groovy' folder)
-COPY --chown=${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} groovy/ ${INIT_GROOVY_FOLDER_PATH}/
-
-# Copy Jenkins pipeline scripts
-COPY --chown=${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} pipelines/ ${PIPELINES_FOLDER_PATH}/
-
-# Verify the copy operation
-RUN ls -la ${INIT_GROOVY_FOLDER_PATH} && ls -la ${PIPELINES_FOLDER_PATH}
+# Copy scripts and files from docker/files to their corresponding locations in the image
+COPY --chown=${JENKINS_SERVICE_USER}:${JENKINS_SERVICE_USER} files/ /
 
 # Install required Jenkins plugins
 RUN jenkins-plugin-cli --plugins \
@@ -40,5 +29,10 @@ RUN jenkins-plugin-cli --plugins \
     credentials-binding \
     plain-credentials \
     script-security
+
+# Install kubectl for Kubernetes access from Jenkins pod
+RUN curl -LO "$KUBECTL_DOWNLOAD_URL" \
+    && install -o root -g root -m 0755 kubectl $KUBECTL_BIN_PATH \
+    && rm kubectl
 
 USER ${JENKINS_SERVICE_USER}

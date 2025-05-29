@@ -14,9 +14,77 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: wait-for-ssh-keys
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              for i in $(seq 1 60); do
+                if [ -f /ssh-keys/ssh_host_ed25519_key ]; then
+                  exit 0
+                fi
+                echo "Waiting for SSH host keys Secret..."
+                sleep 2
+              done
+              echo "SSH host keys Secret not found!" >&2
+              exit 1
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /ssh-keys
+        - name: copy-ssh-keys
+          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          command: ["sh", "-c"]
+          args:
+            - |
+              cp /ssh-keys/ssh_host_ed25519_key /ssh-writable/ && \
+              cp /ssh-keys/ssh_host_ed25519_key.pub /ssh-writable/ && \
+              chmod 600 /ssh-writable/ssh_host_ed25519_key && \
+              chmod 644 /ssh-writable/ssh_host_ed25519_key.pub
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /ssh-keys
+            - name: ssh-writable
+              mountPath: /ssh-writable
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            {{- range .Values.env0 }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- range .Values.env1 }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+            - name: UPDATES_DOWNLOADER_SSH_PORT
+              value: "{{ .Values.updatesDownloader.sshPort }}"
+            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
+              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
+          ports:
+            - containerPort: {{ .Values.updatesDownloader.sshPort }}
+          volumeMounts:
+            - name: ssh-writable
+              mountPath: /etc/ssh/ssh_host_ed25519_key
+              subPath: ssh_host_ed25519_key
+              readOnly: true
+            - name: ssh-writable
+              mountPath: /etc/ssh/ssh_host_ed25519_key.pub
+              subPath: ssh_host_ed25519_key.pub
+              readOnly: true
+            - name: jenkins-public-key
+              mountPath: /jenkins-public-key
+              readOnly: true
+      volumes:
+        - name: ssh-ed25519-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.sshKeySecretName }}
+        - name: ssh-writable
+          emptyDir: {}
+        - name: jenkins-public-key
+          secret:
+            secretName: {{ .Values.updatesDownloader.jenkinsPublicKeySecretName }}
