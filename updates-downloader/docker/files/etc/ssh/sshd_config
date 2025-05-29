@@ -4,3 +4,4 @@ ChallengeResponseAuthentication no
 UsePAM yes
 X11Forwarding no
 PermitUserEnvironment yes
+Subsystem sftp /usr/libexec/openssh/sftp-server
