@@ -1,5 +1,8 @@
 FROM rockylinux:9.3
 
+ARG MODULE_PATH
+ENV APP_FOLDER_PATH=/app
+
 # Install openssh-server
 RUN dnf install -y openssh-server procps-ng net-tools iproute && \
     mkdir -p /var/run/sshd
@@ -12,11 +15,14 @@ RUN dnf clean all && \
 RUN echo "alias ll='ls -l'" >> ~/.bashrc && \
     echo "alias ll='ls -l'" >> /etc/bash.bashrc
 
-# Copy scripts and files
-COPY files/ /
+# Copy utils files first
+COPY utils/docker/files/ /
 
-# Ensure scripts are executable
-RUN find /app -type f -name "*.sh" -exec chmod +x {} \;
+# Copy module-specific files (will overwrite any conflicting files)
+COPY ${MODULE_PATH}/docker/files/ /
+
+# Set permissions for executables
+RUN find ${APP_FOLDER_PATH} -type f -name "*.sh" -exec chmod +x {} \;
 
 # Use the entrypoint script
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ${APP_FOLDER_PATH}/entrypoint.sh
