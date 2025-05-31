@@ -30,3 +30,8 @@ updatesDownloader:
   jenkinsPrivateKeySecretName: jenkins-ssh-private-key
   jenkinsPublicKeySecretName: jenkins-ssh-public-key
   knownHostsSecretName: updates-downloader-known-hosts
+internalLinux:
+  sshPort: 22
+  sshJenkinsUsername: jenkins
+  jenkinsPrivateKeySecretName: internal-linux-jenkins-private-key
+  knownHostsSecretName: internal-linux-known-hosts

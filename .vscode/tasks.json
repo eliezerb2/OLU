@@ -1,8 +1,7 @@
 {
     "version": "2.0.0",
     "tasks": [
-        {
-            "label": "All - Stop",
+        { "label": "All - Stop",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -12,8 +11,7 @@
             "group": "test",
             "problemMatcher": []
         },
-        {
-            "label": "internal-linux - Build Docker Image",
+        { "label": "internal-linux - Build Docker Image",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -29,8 +27,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "internal-linux - Deploy and Tail Logs",
+        { "label": "internal-linux - Deploy and Tail Logs",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -47,8 +44,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "internal-linux - uninstall",
+        { "label": "internal-linux - uninstall",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -59,8 +55,7 @@
             "group": "test",
             "problemMatcher": []
         },
-        {
-            "label": "Jenkins - Build Docker Image",
+        { "label": "Jenkins - Build Docker Image",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -76,8 +71,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Jenkins - Deploy and Tail Logs",
+        { "label": "Jenkins - Deploy and Tail Logs",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -94,8 +88,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Jenkins - Open Pod Shells",
+        { "label": "Jenkins - Open Pod Shells",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -110,19 +103,18 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Jenkins - Stop",
+        { "label": "Jenkins - Uninstall",
             "type": "shell",
-            "command": "helm",
+            "command": "powershell",
             "args": [
-                "uninstall",
-                "jenkins-controller"
+                "-File",
+                ".vscode/Uninstall-Service.ps1",
+                "-ServiceName", "jenkins-controller"
             ],
             "group": "test",
             "problemMatcher": []
         },
-        {
-            "label": "Nexus - Build Docker Image",
+        { "label": "Nexus - Build Docker Image",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -138,8 +130,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Nexus - Deploy and Tail Logs",
+        { "label": "Nexus - Deploy and Tail Logs",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -157,8 +148,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Nexus - Open Pod Shells",
+        { "label": "Nexus - Open Pod Shells",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -173,8 +163,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Nexus - Start Repository",
+        { "label": "Nexus - Start Repository",
             "type": "shell",
             "command": "helm",
             "args": [
@@ -191,8 +180,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Nexus - Stop All",
+        { "label": "Nexus - Stop All",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -202,8 +190,7 @@
             "group": "test",
             "problemMatcher": []
         },
-        {
-            "label": "Nexus - Stop Repository",
+        { "label": "Nexus - Stop Repository",
             "dependsOn": [],
             "type": "shell",
             "command": "powershell",
@@ -214,8 +201,7 @@
             "group": "test",
             "problemMatcher": []
         },
-        {
-            "label": "Updates Downloader - Build Docker Image",
+        { "label": "Updates Downloader - Build Docker Image",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -231,8 +217,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Updates Downloader - Deploy and Tail Logs",
+        { "label": "Updates Downloader - Deploy and Tail Logs",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -249,8 +234,7 @@
             },
             "problemMatcher": []
         },
-        {
-            "label": "Updates Downloader - Stop",
+        { "label": "Updates Downloader - Stop",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -261,8 +245,7 @@
             "group": "test",
             "problemMatcher": []
         },
-        {
-            "label": "Create SSH Secret Docker - Build Docker Image",
+        { "label": "Create SSH Secret Docker - Build Docker Image",
             "type": "shell",
             "command": "docker",
             "args": [

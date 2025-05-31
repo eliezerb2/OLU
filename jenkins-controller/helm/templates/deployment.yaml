@@ -40,6 +40,8 @@ spec:
             {{- end }}          
             - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
               value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
+            - name: INTERNAL_LINUX_SSH_JENKINS_USERNAME
+              value: "{{ .Values.internalLinux.sshJenkinsUsername }}"
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
@@ -55,20 +57,35 @@ spec:
               mkdir -p /var/jenkins_home/.ssh
               chmod 700 /var/jenkins_home/.ssh
               
-              # Copy SSH key with proper permissions
-              cp /ssh-key/id_ed25519 /var/jenkins_home/.ssh/id_ed25519
-              chmod 600 /var/jenkins_home/.ssh/id_ed25519
+              # Copy SSH keys with proper permissions
+              cp /updates-downloader-ssh-key/id_ed25519 /var/jenkins_home/.ssh/updates_downloader_id_ed25519
+              chmod 600 /var/jenkins_home/.ssh/updates_downloader_id_ed25519
+              
+              cp /internal-linux-ssh-key/id_ed25519 /var/jenkins_home/.ssh/internal_linux_id_ed25519
+              chmod 600 /var/jenkins_home/.ssh/internal_linux_id_ed25519
               
               # Copy known_hosts with proper permissions
-              cp /known-hosts/known_hosts /var/jenkins_home/.ssh/known_hosts
-              chmod 644 /var/jenkins_home/.ssh/known_hosts
+              cp /updates-downloader-known-hosts/known_hosts /var/jenkins_home/.ssh/updates_downloader_known_hosts
+              chmod 644 /var/jenkins_home/.ssh/updates_downloader_known_hosts
+              
+              cp /internal-linux-known-hosts/known_hosts /var/jenkins_home/.ssh/internal_linux_known_hosts
+              chmod 644 /var/jenkins_home/.ssh/internal_linux_known_hosts
               
               # Create SSH config
               echo "Host updates-downloader" > /var/jenkins_home/.ssh/config
               echo "  HostName updates-downloader" >> /var/jenkins_home/.ssh/config
               echo "  Port {{ .Values.updatesDownloader.sshPort }}" >> /var/jenkins_home/.ssh/config
               echo "  User {{ .Values.updatesDownloader.sshJenkinsUsername }}" >> /var/jenkins_home/.ssh/config
-              echo "  IdentityFile /var/jenkins_home/.ssh/id_ed25519" >> /var/jenkins_home/.ssh/config
+              echo "  IdentityFile /var/jenkins_home/.ssh/updates_downloader_id_ed25519" >> /var/jenkins_home/.ssh/config
+              echo "  UserKnownHostsFile /var/jenkins_home/.ssh/updates_downloader_known_hosts" >> /var/jenkins_home/.ssh/config
+              echo "  StrictHostKeyChecking yes" >> /var/jenkins_home/.ssh/config
+              echo "" >> /var/jenkins_home/.ssh/config
+              echo "Host internal-linux" >> /var/jenkins_home/.ssh/config
+              echo "  HostName internal-linux" >> /var/jenkins_home/.ssh/config
+              echo "  Port {{ .Values.internalLinux.sshPort }}" >> /var/jenkins_home/.ssh/config
+              echo "  User {{ .Values.internalLinux.sshJenkinsUsername }}" >> /var/jenkins_home/.ssh/config
+              echo "  IdentityFile /var/jenkins_home/.ssh/internal_linux_id_ed25519" >> /var/jenkins_home/.ssh/config
+              echo "  UserKnownHostsFile /var/jenkins_home/.ssh/internal_linux_known_hosts" >> /var/jenkins_home/.ssh/config
               echo "  StrictHostKeyChecking yes" >> /var/jenkins_home/.ssh/config
               chmod 600 /var/jenkins_home/.ssh/config
               
@@ -77,21 +94,35 @@ spec:
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
-            - name: jenkins-ssh-key
-              mountPath: /ssh-key
+            - name: updates-downloader-ssh-key
+              mountPath: /updates-downloader-ssh-key
               readOnly: true
-            - name: jenkins-known-hosts
-              mountPath: /known-hosts
+            - name: updates-downloader-known-hosts
+              mountPath: /updates-downloader-known-hosts
+              readOnly: true
+            - name: internal-linux-ssh-key
+              mountPath: /internal-linux-ssh-key
+              readOnly: true
+            - name: internal-linux-known-hosts
+              mountPath: /internal-linux-known-hosts
               readOnly: true
       volumes:
-        - name: jenkins-ssh-key
+        - name: updates-downloader-ssh-key
           secret:
             secretName: {{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }}
             defaultMode: 0600
-        - name: jenkins-home
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-pvc
-        - name: jenkins-known-hosts
+        - name: updates-downloader-known-hosts
           secret:
             secretName: {{ .Values.updatesDownloader.knownHostsSecretName }}
             defaultMode: 0644
+        - name: internal-linux-ssh-key
+          secret:
+            secretName: {{ .Values.internalLinux.jenkinsPrivateKeySecretName }}
+            defaultMode: 0600
+        - name: internal-linux-known-hosts
+          secret:
+            secretName: {{ .Values.internalLinux.knownHostsSecretName }}
+            defaultMode: 0644
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
