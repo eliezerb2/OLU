@@ -15,12 +15,13 @@
         {
             "label": "internal-linux - Build Docker Image",
             "type": "shell",
-            "command": "docker",
+            "command": "powershell",
             "args": [
-                "build",
-                "-t",
-                "internal-linux",
-                "./internal-linux/docker"
+                "-File",
+                ".vscode/build-docker.ps1",
+                "-dockerfilePath", "./internal-linux/docker",
+                "-imageTag", "internal-linux",
+                "-NoCache"
             ],
             "group": {
                 "kind": "build",
@@ -47,13 +48,13 @@
             "problemMatcher": []
         },
         {
-            "label": "internal-linux - Stop",
-            "dependsOn": [],
+            "label": "internal-linux - uninstall",
             "type": "shell",
             "command": "powershell",
             "args": [
-                "-Command",
-                "helm uninstall internal-linux; kubectl delete pod -l app.kubernetes.io/name=internal-linux,app.kubernetes.io/component=admin-password --ignore-not-found"
+                "-File",
+                ".vscode/Uninstall-Service.ps1",
+                "-ServiceName", "internal-linux"
             ],
             "group": "test",
             "problemMatcher": []
@@ -254,7 +255,8 @@
             "command": "powershell",
             "args": [
                 "-File",
-                ".vscode/stop-updates-downloader.ps1"
+                ".vscode/Uninstall-Service.ps1",
+                "-ServiceName", "updates-downloader"
             ],
             "group": "test",
             "problemMatcher": []

@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-generate-ssh-keys
+  labels:
+    app: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-10"
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.sshKeygenJob.name }}
+      restartPolicy: OnFailure
+      containers:
+        - name: ssh-keygen
+          image: "{{ .Values.sshKeygenJob.image.repository }}:{{ .Values.sshKeygenJob.image.tag }}"
+          imagePullPolicy: {{ .Values.sshKeygenJob.image.imagePullPolicy}}
+          command: ["sh", "-c"]
+          args:
+            - |
+              export JENKINS_SSH_USER_NAME={{ .Values.internalLinux.sshJenkinsUsername }}
+              export SSH_HOST_KEY_SECRET={{ .Values.internalLinux.sshKeySecretName }}
+              export JENKINS_PRIVATE_KEY_SECRET={{ .Values.internalLinux.jenkinsPrivateKeySecretName }}
+              export JENKINS_PUBLIC_KEY_SECRET={{ .Values.internalLinux.jenkinsPublicKeySecretName }}
+              export UPDATES_DOWNLOADER_KNOWN_HOSTS_SECRET={{ .Values.internalLinux.knownHostsSecretName }}
+              export UPDATES_DOWNLOADER_HOST="internal-linux"
+              /scripts/generate-ssh-secrets.sh
+          env:
+            - name: INTERNAL_LINUX_HOST
+              value: "internal-linux"
