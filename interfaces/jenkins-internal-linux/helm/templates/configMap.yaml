@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    appInitiating: jenkins
+    appResponding: internal-linux
+    protocol: ssh
+data:
+  LOG_LEVEL: "DEBUG"
+  INTERNAL_LINUX_SSH_PORT: "{{ .Values.internalLinux.ssh.port }}"
+  INTERNAL_LINUX_SSH_JENKINS_USERNAME: "{{ .Values.internalLinux.ssh.jenkinsUsername }}"

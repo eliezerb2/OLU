@@ -1,0 +1,6 @@
+apiVersion: v2
+name: interface-jenkins-internal-linux
+description: Shared ConfigMap for Jenkins and Internal Linux
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

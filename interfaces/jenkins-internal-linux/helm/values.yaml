@@ -1,0 +1,4 @@
+internalLinux:
+  ssh:
+    port: 2222
+    jenkinsUsername: "jenkins"
