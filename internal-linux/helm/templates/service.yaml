@@ -7,8 +7,8 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.internalLinux.sshPort }}
-      targetPort: {{ .Values.internalLinux.sshPort }}
+    - port: {{ .Values.internalLinux.ssh.port }}
+      targetPort: {{ .Values.internalLinux.ssh.port }}
       protocol: TCP
       name: ssh
   selector:

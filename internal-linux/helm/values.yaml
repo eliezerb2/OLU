@@ -18,8 +18,6 @@ resources:
     memory: 64Mi
 
 internalLinux:
-  sshPort: 22
-  sshJenkinsUsername: "jenkins"
   sshKeySecretName: "internal-linux-ssh-host-key"
   jenkinsPrivateKeySecretName: "internal-linux-jenkins-private-key"
   jenkinsPublicKeySecretName: "internal-linux-jenkins-public-key"

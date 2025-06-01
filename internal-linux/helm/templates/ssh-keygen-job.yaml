@@ -35,7 +35,7 @@ spec:
               /scripts/generate-ssh-secrets.sh
           envFrom:
             - configMapRef:
-                name: jenkins-internal-linux-config
+                name: interface-jenkins-internal-linux-config
           env:
             - name: INTERNAL_LINUX_HOST
               value: "internal-linux"

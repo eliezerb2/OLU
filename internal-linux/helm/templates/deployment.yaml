@@ -52,14 +52,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:
-                name: jenkins-internal-linux-config
+                name: interface-jenkins-internal-linux-config
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          env:
-            - name: INTERNAL_LINUX_SSH_PORT
-              value: "{{ .Values.internalLinux.sshPort }}"
           ports:
-            - containerPort: {{ .Values.internalLinux.sshPort }}
+            - containerPort: {{ .Values.internalLinux.ssh.port }}
           volumeMounts:
             - name: ssh-writable
               mountPath: /etc/ssh/ssh_host_ed25519_key
