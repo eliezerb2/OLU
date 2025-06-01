@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-internal-linux-config
+  labels:
+    appInitiating: jenkins
+    appResponding: internal-linux
+    protocol: ssh
+data:
+  LOG_LEVEL: "DEBUG"
+  INTERNAL_LINUX_SSH_JENKINS_USERNAME: "jenkins"
+  INTERNAL_LINUX_SSH_PORT: "2222"

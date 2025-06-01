@@ -26,13 +26,16 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              export JENKINS_SSH_USER_NAME={{ .Values.internalLinux.sshJenkinsUsername }}
+              export JENKINS_SSH_USER_NAME=${INTERNAL_LINUX_SSH_JENKINS_USERNAME}
               export SSH_HOST_KEY_SECRET={{ .Values.internalLinux.sshKeySecretName }}
               export JENKINS_PRIVATE_KEY_SECRET={{ .Values.internalLinux.jenkinsPrivateKeySecretName }}
               export JENKINS_PUBLIC_KEY_SECRET={{ .Values.internalLinux.jenkinsPublicKeySecretName }}
               export UPDATES_DOWNLOADER_KNOWN_HOSTS_SECRET={{ .Values.internalLinux.knownHostsSecretName }}
               export UPDATES_DOWNLOADER_HOST="internal-linux"
               /scripts/generate-ssh-secrets.sh
+          envFrom:
+            - configMapRef:
+                name: jenkins-internal-linux-config
           env:
             - name: INTERNAL_LINUX_HOST
               value: "internal-linux"
