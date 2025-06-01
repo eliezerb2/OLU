@@ -15,7 +15,7 @@ Write-Host "  AppLabel: $AppLabel" -ForegroundColor Cyan
 Write-Host "  LogFilePath: $LogFilePath" -ForegroundColor Cyan
 
 if (-not $ReleaseName -or -not $ChartPath -or -not $ValuesFile -or -not $AppLabel) {
-    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <name> -ChartPath <path> -ValuesFile <file1> <file2> ... -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
+    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <n> -ChartPath <path> -ValuesFile <file1> <file2> ... -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
     exit 1
 }
 
@@ -34,13 +34,42 @@ Write-Host "Values files: $valuesArgs" -ForegroundColor Cyan
 # Deploy or upgrade the Helm release
 helm upgrade --install $ReleaseName $ChartPath $valuesArgs
 
+# Check if there are any pods with the specified label
+$podCount = 0
+$maxRetries = 10
+$retryCount = 0
+
+while ($retryCount -lt $maxRetries) {
+    $podCount = (kubectl get pods -l app=$AppLabel --no-headers 2>$null | Measure-Object -Line).Lines
+    if ($podCount -gt 0) {
+        break
+    }
+    Write-Host "No pods found with label app=$AppLabel. Retry $($retryCount+1)/$maxRetries..." -ForegroundColor Yellow
+    $retryCount++
+    Start-Sleep -Seconds 2
+}
+
+if ($podCount -eq 0) {
+    Write-Host "No pods found with label app=$AppLabel after $maxRetries retries. Exiting." -ForegroundColor Yellow
+    exit 0
+}
+
 # Wait for the pod to be ready and get the pod name
 $pod = $null
 
 do {
     $pod = kubectl get pods -l app=$AppLabel -o jsonpath='{.items[0].metadata.name}'
-    Start-Sleep -Seconds 2
-} while (-not $pod -or (kubectl get pod $pod -o jsonpath='{.status.phase}') -ne 'Running')
+    if (-not $pod) {
+        Write-Host "Waiting for pod with label app=$AppLabel to be created..."
+        Start-Sleep -Seconds 2
+    } else {
+        $phase = kubectl get pod $pod -o jsonpath='{.status.phase}' 2>$null
+        if ($phase -ne 'Running') {
+            Write-Host "Pod $pod is in phase: $phase. Waiting..."
+            Start-Sleep -Seconds 2
+        }
+    }
+} while (-not $pod -or (kubectl get pod $pod -o jsonpath='{.status.phase}' 2>$null) -ne 'Running')
 
 # Tail the logs in a new PowerShell window
 $tailCmd = "kubectl logs -f $pod"
