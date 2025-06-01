@@ -2,7 +2,6 @@
 set -e
 
 # set variables for secrets
-SSH_HOST_KEY_PATH="/etc/ssh/ssh_host_ed25519_key"
 SSH_HOST_KEY_PUB_PATH="${SSH_HOST_KEY_PATH}.pub"
 JENKINS_KEY_PATH="/tmp/${JENKINS_SSH_USER_NAME}_id_ed25519"
 UPDATES_DOWNLOADER_KNOWN_HOSTS_PATH="/tmp/updates_downloader_known_hosts"

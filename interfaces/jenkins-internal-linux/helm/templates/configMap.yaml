@@ -10,3 +10,4 @@ data:
   LOG_LEVEL: "DEBUG"
   INTERNAL_LINUX_SSH_PORT: "{{ .Values.internalLinux.ssh.port }}"
   INTERNAL_LINUX_SSH_JENKINS_USERNAME: "{{ .Values.internalLinux.ssh.jenkinsUsername }}"
+  SSH_HOST_KEY_PATH: {{ .Values.internalLinux.ssh.hostKeyPath }}

@@ -23,7 +23,7 @@ spec:
         - name: ssh-keygen
           image: "{{ .Values.sshKeygenJob.image.repository }}:{{ .Values.sshKeygenJob.image.tag }}"
           imagePullPolicy: {{ .Values.sshKeygenJob.image.imagePullPolicy}}
-          command: ["sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               export JENKINS_SSH_USER_NAME=${INTERNAL_LINUX_SSH_JENKINS_USERNAME}
@@ -31,8 +31,14 @@ spec:
               export JENKINS_PRIVATE_KEY_SECRET={{ .Values.internalLinux.jenkinsPrivateKeySecretName }}
               export JENKINS_PUBLIC_KEY_SECRET={{ .Values.internalLinux.jenkinsPublicKeySecretName }}
               export UPDATES_DOWNLOADER_KNOWN_HOSTS_SECRET={{ .Values.internalLinux.knownHostsSecretName }}
-              export UPDATES_DOWNLOADER_HOST="internal-linux"
-              /scripts/generate-ssh-secrets.sh
+              export SSH_HOST_KEY_PATH={{ .Values.internalLinux.ssh.hostKeyPath }}
+              export UPDATES_DOWNLOADER_HOST="internal-linux"   
+              # Debug information
+              echo "Current directory: $(pwd)"
+              echo "Script content check:"
+              cat /scripts/generate-ssh-secrets.sh             
+              # Try to execute the script directly with bash
+              bash /scripts/generate-ssh-secrets.sh
           envFrom:
             - configMapRef:
                 name: interface-jenkins-internal-linux-config

@@ -303,7 +303,8 @@
                 "build",
                 "-t",
                 "create-ssh-secret",
-                "./utils/create-ssh-secret-docker"
+                "./utils/create-ssh-secret-docker",
+                "--no-cache"
             ],
             "group": {
                 "kind": "build",

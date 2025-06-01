@@ -2,3 +2,4 @@ internalLinux:
   ssh:
     port: 2222
     jenkinsUsername: "jenkins"
+    hostKeyPath: "/etc/ssh/ssh_host_ed25519_key"

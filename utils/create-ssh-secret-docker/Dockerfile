@@ -14,3 +14,6 @@ RUN apt-get update && \
 COPY files/ /
 
 RUN chmod +x /scripts/generate-ssh-secrets.sh
+
+# Override the kubectl entrypoint
+ENTRYPOINT []
