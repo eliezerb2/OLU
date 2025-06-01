@@ -9,27 +9,40 @@ LOG_LEVEL_ERROR=3
 # Default log level
 CURRENT_LOG_LEVEL=${LOG_LEVEL_INFO}
 
+# Get script name function
+get_script_name() {
+    basename "$0" 2>/dev/null || echo "unknown"
+}
+
+# Generic log function
+_log() {
+    level=$1
+    level_name=$2
+    message=$3
+    output=$4
+    
+    if [ ${CURRENT_LOG_LEVEL} -le ${level} ]; then
+        if [ "$output" = "stderr" ]; then
+            echo "[${level_name}][$(date '+%Y-%m-%d %H:%M:%S')][$(get_script_name)] ${message}" >&2
+        else
+            echo "[${level_name}][$(date '+%Y-%m-%d %H:%M:%S')][$(get_script_name)] ${message}"
+        fi
+    fi
+}
+
 # Log functions
 log_debug() {
-    if [ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_DEBUG} ]; then
-        echo "[DEBUG][$(date '+%Y-%m-%d %H:%M:%S')] $1"
-    fi
+    _log ${LOG_LEVEL_DEBUG} "DEBUG" "$1" "stdout"
 }
 
 log_info() {
-    if [ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_INFO} ]; then
-        echo "[INFO][$(date '+%Y-%m-%d %H:%M:%S')] $1"
-    fi
+    _log ${LOG_LEVEL_INFO} "INFO" "$1" "stdout"
 }
 
 log_warn() {
-    if [ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_WARN} ]; then
-        echo "[WARN][$(date '+%Y-%m-%d %H:%M:%S')] $1"
-    fi
+    _log ${LOG_LEVEL_WARN} "WARN" "$1" "stdout"
 }
 
 log_error() {
-    if [ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_ERROR} ]; then
-        echo "[ERROR][$(date '+%Y-%m-%d %H:%M:%S')] $1" >&2
-    fi
+    _log ${LOG_LEVEL_ERROR} "ERROR" "$1" "stderr"
 }
