@@ -11,6 +11,29 @@
             "group": "test",
             "problemMatcher": []
         },
+        { "label": "jenkins-internal-linux-config - Install ConfigMap",
+            "type": "shell",
+            "command": "kubectl",
+            "args": [
+                "apply",
+                "-f",
+                "./interfaces/jenkins-internal-linux-config.yaml"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        { "label": "jenkins-internal-linux-config - Uninstall ConfigMap",
+            "type": "shell",
+            "command": "kubectl",
+            "args": [
+                "delete",
+                "configmap",
+                "jenkins-internal-linux-config",
+                "--ignore-not-found"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
         { "label": "internal-linux - Build Docker Image",
             "type": "shell",
             "command": "powershell",
