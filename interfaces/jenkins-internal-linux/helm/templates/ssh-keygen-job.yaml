@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
+  labels:
+    {{- include "interface.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-10"
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.sshKeygenJob.serviceAccountName }}
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 0  # Run as root
+      containers:
+        - name: ssh-keygen
+          image: "{{ .Values.sshKeygenJob.image.repository }}:{{ .Values.sshKeygenJob.image.tag }}"
+          imagePullPolicy: {{ .Values.sshKeygenJob.image.imagePullPolicy}}
+          command: ["/bin/bash", "-c", "/scripts/generate-ssh-secrets.sh"]
+          env:
+            - name: SSH_USER_NAME
+              value: {{ .Values.internalLinux.ssh.jenkinsUsername }}
+            - name: TARGET_HOST
+              value: "internal-linux"
+            - name: SSH_HOST_KEY_SECRET
+              value: {{ .Values.internalLinux.ssh.keySecretName }}
+            - name: SSH_PRIVATE_KEY_SECRET
+              value: {{ .Values.internalLinux.ssh.privateKeySecretName }}
+            - name: SSH_PUBLIC_KEY_SECRET
+              value: {{ .Values.internalLinux.ssh.publicKeySecretName }}
+            - name: KNOWN_HOSTS_SECRET
+              value: {{ .Values.internalLinux.ssh.knownHostsSecretName }}

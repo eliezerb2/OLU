@@ -1,10 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-config
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
   labels:
-    appInitiating: jenkins
-    appResponding: internal-linux
+    {{- include "interface.labels" . | nindent 4 }}
     protocol: ssh
 data:
   LOG_LEVEL: "DEBUG"

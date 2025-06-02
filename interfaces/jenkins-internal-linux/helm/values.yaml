@@ -1,5 +1,18 @@
+labels:
+  initiator: "jenkins"
+  responder: "internal-linux"
 internalLinux:
   ssh:
     port: 2222
     jenkinsUsername: "jenkins"
     hostKeyPath: "/etc/ssh/ssh_host_ed25519_key"
+    keySecretName: "internal-linux-ssh-host-key"
+    privateKeySecretName: "internal-linux-jenkins-private-key"
+    publicKeySecretName: "internal-linux-jenkins-public-key"
+    knownHostsSecretName: "internal-linux-known-hosts"
+sshKeygenJob:
+  serviceAccountName: internal-linux-ssh-keygen
+  image:
+    repository: create-ssh-secret
+    tag: latest
+    imagePullPolicy: IfNotPresent
