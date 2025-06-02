@@ -25,14 +25,14 @@ spec:
           command: ["/bin/bash", "-c", "/scripts/generate-ssh-secrets.sh"]
           env:
             - name: SSH_USER_NAME
-              value: {{ .Values.internalLinux.ssh.jenkinsUsername }}
+              value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.jenkinsUsername }}
             - name: TARGET_HOST
               value: "internal-linux"
             - name: SSH_HOST_KEY_SECRET
-              value: {{ .Values.internalLinux.ssh.keySecretName }}
+              value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.keySecretName }}
             - name: SSH_PRIVATE_KEY_SECRET
-              value: {{ .Values.internalLinux.ssh.privateKeySecretName }}
+              value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.privateKeySecretName }}
             - name: SSH_PUBLIC_KEY_SECRET
-              value: {{ .Values.internalLinux.ssh.publicKeySecretName }}
+              value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.publicKeySecretName }}
             - name: KNOWN_HOSTS_SECRET
-              value: {{ .Values.internalLinux.ssh.knownHostsSecretName }}
+              value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.knownHostsSecretName }}

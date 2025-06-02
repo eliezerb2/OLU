@@ -9,3 +9,13 @@ responder: {{ .Values.labels.responder }}
 {{- define "get.filename" -}}
 {{- .Template.Name | base | trimSuffix ".yaml" | lower -}}
 {{- end -}}
+
+{{/* SSH host key path template */}}
+{{- define "sshHostKeyPath" -}}
+{{- printf "%s%s%s" .Values.internalLinux.ssh.hostKeyPath.prefix .Values.internalLinux.ssh.hostKeyPath.algorithm .Values.internalLinux.ssh.hostKeyPath.suffix -}}
+{{- end -}}
+
+{{/* SSH host key pub path template */}}
+{{- define "sshHostKeyPubPath" -}}
+{{- printf "%s%s%s%s" .Values.internalLinux.ssh.hostKeyPath.prefix .Values.internalLinux.ssh.hostKeyPath.algorithm .Values.internalLinux.ssh.hostKeyPath.suffix .Values.internalLinux.ssh.hostKeyPath.pubSuffix -}}
+{{- end -}}

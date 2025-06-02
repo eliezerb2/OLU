@@ -5,11 +5,16 @@ internalLinux:
   ssh:
     port: 2222
     jenkinsUsername: "jenkins"
-    hostKeyPath: "/etc/ssh/ssh_host_ed25519_key"
-    keySecretName: "internal-linux-ssh-host-key"
-    privateKeySecretName: "internal-linux-jenkins-private-key"
-    publicKeySecretName: "internal-linux-jenkins-public-key"
-    knownHostsSecretName: "internal-linux-known-hosts"
+    hostKeyPath:
+      prefix: "/etc/ssh/ssh_host_"
+      algorithm: "ed25519"
+      suffix: "_key"
+      pubSuffix: ".pub"
+    # hostKeyPath: "/etc/ssh/ssh_host_ed25519_key"
+    keySecretName: "ssh-host-key"
+    privateKeySecretName: "ssh-private-key"
+    publicKeySecretName: "ssh-public-key"
+    knownHostsSecretName: "ssh-known-hosts"
 sshKeygenJob:
   serviceAccountName: internal-linux-ssh-keygen
   image:

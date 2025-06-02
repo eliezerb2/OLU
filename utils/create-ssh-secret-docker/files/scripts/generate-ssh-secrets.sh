@@ -2,7 +2,6 @@
 set -e
 
 # Set variables for secrets
-SSH_HOST_KEY_PUB_PATH="${SSH_HOST_KEY_PATH}.pub"
 USER_KEY_PATH="/tmp/${SSH_USER_NAME}_id_ed25519"
 KNOWN_HOSTS_PATH="/tmp/known_hosts"
 USER_AUTHORIZED_KEYS_PATH="/tmp/authorized_keys"
