@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-
+# TODO: check what other vars need to move to the chart
 # Set variables for secrets
 USER_KEY_PATH="/tmp/${SSH_USER_NAME}_id_ed25519"
 KNOWN_HOSTS_PATH="/tmp/known_hosts"
