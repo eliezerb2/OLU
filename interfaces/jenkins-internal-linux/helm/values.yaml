@@ -16,7 +16,8 @@ internalLinux:
     publicKeySecretName: "ssh-public-key"
     knownHostsSecretName: "ssh-known-hosts"
 sshKeygenJob:
-  serviceAccountName: internal-linux-ssh-keygen
+  roleName: ssh-keygen
+  serviceAccountName: ssh-keygen
   image:
     repository: create-ssh-secret
     tag: latest

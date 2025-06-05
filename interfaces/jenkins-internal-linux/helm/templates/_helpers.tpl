@@ -19,3 +19,13 @@ responder: {{ .Values.labels.responder }}
 {{- define "sshHostKeyPubPath" -}}
 {{- printf "%s%s%s%s" .Values.internalLinux.ssh.hostKeyPath.prefix .Values.internalLinux.ssh.hostKeyPath.algorithm .Values.internalLinux.ssh.hostKeyPath.suffix .Values.internalLinux.ssh.hostKeyPath.pubSuffix -}}
 {{- end -}}
+
+{{/* SSH keygen service account name */}}
+{{- define "sshKeygenServiceAccountName" -}}
+{{- printf "%s-%s" .Release.Name .Values.sshKeygenJob.serviceAccountName -}}
+{{- end -}}
+
+{{/* SSH keygen role name */}}
+{{- define "sshKeygenRoleName" -}}
+{{- printf "%s-%s" .Release.Name .Values.sshKeygenJob.roleName -}}
+{{- end -}}
