@@ -9,6 +9,7 @@ metadata:
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
     "helm.sh/hook-weight": "-10"
 spec:
+  backoffLimit: {{ .Values.sshKeygenJob.backoffLimit }}
   template:
     metadata:
       labels:
@@ -23,6 +24,9 @@ spec:
           image: "{{ .Values.sshKeygenJob.image.repository }}:{{ .Values.sshKeygenJob.image.tag }}"
           imagePullPolicy: {{ .Values.sshKeygenJob.image.imagePullPolicy}}
           command: ["/bin/bash", "-c", "/scripts/generate-ssh-secrets.sh"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "configMapName" . }}
           env:
             - name: SSH_USER_NAME
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.jenkinsUsername }}

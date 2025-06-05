@@ -1,13 +1,17 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-{{ include "get.filename" . }}
+  name: {{ include "configMapName" . }}
   labels:
     {{- include "interface.labels" . | nindent 4 }}
     protocol: ssh
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-50"
 data:
   LOG_LEVEL: "DEBUG"
   INTERNAL_LINUX_SSH_PORT: "{{ .Values.internalLinux.ssh.port }}"
   INTERNAL_LINUX_SSH_JENKINS_USERNAME: "{{ .Values.internalLinux.ssh.jenkinsUsername }}"
   SSH_HOST_KEY_PATH: {{ template "sshHostKeyPath" . }}
   SSH_HOST_KEY_PUB_PATH: {{ template "sshHostKeyPubPath" . }}
+  SSH_KEY_ALGORITHM: "{{ .Values.internalLinux.ssh.hostKeyPath.algorithm }}"

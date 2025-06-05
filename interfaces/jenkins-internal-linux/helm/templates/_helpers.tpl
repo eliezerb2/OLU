@@ -29,3 +29,8 @@ responder: {{ .Values.labels.responder }}
 {{- define "sshKeygenRoleName" -}}
 {{- printf "%s-%s" .Release.Name .Values.sshKeygenJob.roleName -}}
 {{- end -}}
+
+{{/* config map name */}}
+{{- define "configMapName" -}}
+{{- printf "%s-%s" .Release.Name .Values.configMap.name -}}
+{{- end -}}

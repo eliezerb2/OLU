@@ -1,6 +1,8 @@
 labels:
   initiator: "jenkins"
   responder: "internal-linux"
+configMap:
+  name: "config"
 internalLinux:
   ssh:
     port: 2222
@@ -16,6 +18,7 @@ internalLinux:
     publicKeySecretName: "ssh-public-key"
     knownHostsSecretName: "ssh-known-hosts"
 sshKeygenJob:
+  backoffLimit: 1
   roleName: ssh-keygen
   serviceAccountName: ssh-keygen
   image:

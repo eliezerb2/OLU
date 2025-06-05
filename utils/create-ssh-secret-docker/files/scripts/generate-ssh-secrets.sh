@@ -2,7 +2,7 @@
 set -e
 # TODO: check what other vars need to move to the chart
 # Set variables for secrets
-USER_KEY_PATH="/tmp/${SSH_USER_NAME}_id_ed25519"
+USER_KEY_PATH="/tmp/${SSH_USER_NAME}_id_${SSH_KEY_ALGORITHM}"
 KNOWN_HOSTS_PATH="/tmp/known_hosts"
 USER_AUTHORIZED_KEYS_PATH="/tmp/authorized_keys"
 
@@ -40,16 +40,16 @@ log "Starting..."
 log "Generating SSH host keys..."
 mkdir -p /etc/ssh \
   || error_exit "Failed to create /etc/ssh"
-ssh-keygen -t ed25519 -f /tmp/ssh_host_ed25519_key -N "" \
+ssh-keygen -t ${SSH_KEY_ALGORITHM} -f /tmp/ssh_host_${SSH_KEY_ALGORITHM}_key -N "" \
   || error_exit "ssh-keygen for host key failed"
 
 # Generate user key-pair
 log "Generating $SSH_USER_NAME user key-pair..."
-ssh-keygen -t ed25519 -f "$USER_KEY_PATH" -N "" \
+ssh-keygen -t ${SSH_KEY_ALGORITHM} -f "$USER_KEY_PATH" -N "" \
   || error_exit "Failed to generate $SSH_USER_NAME user key-pair"
 
 # Generate known_hosts entry
-KNOWN_HOSTS_ENTRY="${TARGET_HOST} $(cat /tmp/ssh_host_ed25519_key.pub)"
+KNOWN_HOSTS_ENTRY="${TARGET_HOST} $(cat /tmp/ssh_host_${SSH_KEY_ALGORITHM}_key.pub)"
 echo "$KNOWN_HOSTS_ENTRY" > "$KNOWN_HOSTS_PATH" \
   || error_exit "Failed to create known_hosts entry"
 
@@ -61,10 +61,10 @@ cp "${USER_KEY_PATH}.pub" "$USER_AUTHORIZED_KEYS_PATH" \
 # Prepare secret definitions: name and --from-file args
 log "Preparing secrets definitions..."
 secrets="
-$SSH_PRIVATE_KEY_SECRET --from-file=id_ed25519=${USER_KEY_PATH}
+$SSH_PRIVATE_KEY_SECRET --from-file=id_${SSH_KEY_ALGORITHM}=${USER_KEY_PATH}
 $SSH_PUBLIC_KEY_SECRET --from-file=authorized_keys=${USER_AUTHORIZED_KEYS_PATH}
 $KNOWN_HOSTS_SECRET --from-file=known_hosts=${KNOWN_HOSTS_PATH}
-$SSH_HOST_KEY_SECRET --from-file=ssh_host_ed25519_key=/tmp/ssh_host_ed25519_key --from-file=ssh_host_ed25519_key.pub=/tmp/ssh_host_ed25519_key.pub
+$SSH_HOST_KEY_SECRET --from-file=ssh_host_${SSH_KEY_ALGORITHM}_key=/tmp/ssh_host_${SSH_KEY_ALGORITHM}_key --from-file=ssh_host_${SSH_KEY_ALGORITHM}_key.pub=/tmp/ssh_host_${SSH_KEY_ALGORITHM}_key.pub
 "
 
 echo "$secrets" | while IFS= read -r secret_def; do
@@ -76,7 +76,7 @@ done
 
 # Clean up
 log "Cleaning up temporary files..."
-rm -f "$USER_KEY_PATH" "$USER_KEY_PATH.pub" "$KNOWN_HOSTS_PATH" "/tmp/ssh_host_ed25519_key" "/tmp/ssh_host_ed25519_key.pub" "$USER_AUTHORIZED_KEYS_PATH" \
+rm -f "$USER_KEY_PATH" "$USER_KEY_PATH.pub" "$KNOWN_HOSTS_PATH" "/tmp/ssh_host_${SSH_KEY_ALGORITHM}_key" "/tmp/ssh_host_${SSH_KEY_ALGORITHM}_key.pub" "$USER_AUTHORIZED_KEYS_PATH" \
   || log "Warning: cleanup failed"
 
 log "SSH secret generation complete."
