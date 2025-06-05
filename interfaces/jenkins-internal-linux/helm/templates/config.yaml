@@ -15,3 +15,4 @@ data:
   SSH_HOST_KEY_PATH: {{ template "sshHostKeyPath" . }}
   SSH_HOST_KEY_PUB_PATH: {{ template "sshHostKeyPubPath" . }}
   SSH_KEY_ALGORITHM: "{{ .Values.internalLinux.ssh.hostKeyPath.algorithm }}"
+  INTERNAL_LINUX_SSH_PUBLIC_KEY_SECRET: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.publicKeySecretName }}

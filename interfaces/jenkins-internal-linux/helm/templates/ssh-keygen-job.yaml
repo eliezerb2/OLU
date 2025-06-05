@@ -9,7 +9,6 @@ metadata:
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
     "helm.sh/hook-weight": "-10"
 spec:
-  backoffLimit: {{ .Values.sshKeygenJob.backoffLimit }}
   template:
     metadata:
       labels:
@@ -28,6 +27,8 @@ spec:
             - configMapRef:
                 name: {{ include "configMapName" . }}
           env:
+            - name: ENV_PREFIX_2_REMOVE
+              value: "INTERNAL_LINUX_"
             - name: SSH_USER_NAME
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.jenkinsUsername }}
             - name: TARGET_HOST
@@ -36,7 +37,5 @@ spec:
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.keySecretName }}
             - name: SSH_PRIVATE_KEY_SECRET
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.privateKeySecretName }}
-            - name: SSH_PUBLIC_KEY_SECRET
-              value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.publicKeySecretName }}
             - name: KNOWN_HOSTS_SECRET
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.knownHostsSecretName }}

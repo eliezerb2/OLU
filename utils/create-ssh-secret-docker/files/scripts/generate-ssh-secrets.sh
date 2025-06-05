@@ -1,5 +1,8 @@
 #!/bin/sh
 set -e
+
+. /scripts/unprefix_env_vars.sh || error_exit "Failed to load unprefix_env_vars.sh"
+
 # TODO: check what other vars need to move to the chart
 # Set variables for secrets
 USER_KEY_PATH="/tmp/${SSH_USER_NAME}_id_${SSH_KEY_ALGORITHM}"
@@ -35,6 +38,9 @@ create_secret() {
 }
 
 log "Starting..."
+
+log "Unprefixing environment variables..."
+unprefix_env_vars ${ENV_PREFIX_2_REMOVE:-} || error_exit "Failed to unprefix environment variables"
 
 # Generate SSH host keys
 log "Generating SSH host keys..."

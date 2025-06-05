@@ -18,7 +18,6 @@ internalLinux:
     publicKeySecretName: "ssh-public-key"
     knownHostsSecretName: "ssh-known-hosts"
 sshKeygenJob:
-  backoffLimit: 1
   roleName: ssh-keygen
   serviceAccountName: ssh-keygen
   image:
