@@ -31,6 +31,25 @@ foreach ($vf in $ValuesFilesarray) {
 }
 Write-Host "Values files: $valuesArgs" -ForegroundColor Cyan
 
+# Lint and validate the Helm chart
+Write-Host "Linting Helm chart..." -ForegroundColor Cyan
+$lintOutput = helm lint $ChartPath $valuesArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Helm lint failed:" -ForegroundColor Red
+    Write-Host $lintOutput -ForegroundColor Red
+    exit 3
+}
+Write-Host "Helm lint passed" -ForegroundColor Green
+
+Write-Host "Validating Helm templates..." -ForegroundColor Cyan
+$templateOutput = helm template $ReleaseName $ChartPath $valuesArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Helm template validation failed:" -ForegroundColor Red
+    Write-Host $templateOutput -ForegroundColor Red
+    exit 4
+}
+Write-Host "Helm template validation passed" -ForegroundColor Green
+
 # Deploy or upgrade the Helm release
 helm upgrade --install $ReleaseName $ChartPath $valuesArgs
 
