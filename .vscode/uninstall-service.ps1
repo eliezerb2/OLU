@@ -45,5 +45,6 @@ Remove-Resources -ResourceType "secret"
 Remove-Resources -ResourceType "serviceaccount"
 Remove-Resources -ResourceType "role"
 Remove-Resources -ResourceType "rolebinding"
+Remove-Resources -ResourceType "configmap"
 
 Write-Host "$ServiceName release and all related resources uninstalled."
