@@ -15,23 +15,6 @@ spec:
         app: {{ .Release.Name }}
     spec:
       initContainers:
-        - name: wait-for-ssh-keys
-          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
-          command: ["sh", "-c"]
-          args:
-            - |
-              for i in $(seq 1 60); do
-                if [ -f /ssh-keys/ssh_host_ed25519_key ]; then
-                  exit 0
-                fi
-                echo "Waiting for SSH host keys Secret..."
-                sleep 2
-              done
-              echo "SSH host keys Secret not found!" >&2
-              exit 1
-          volumeMounts:
-            - name: ssh-ed25519-key
-              mountPath: /ssh-keys
         - name: copy-ssh-keys
           image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
           command: ["sh", "-c"]
@@ -59,12 +42,12 @@ spec:
             - containerPort: {{ .Values.internalLinux.ssh.port }}
           volumeMounts:
             - name: ssh-writable
-              mountPath: {{ .Values.internalLinux.ssh.hostKeyPath }}
-              subPath: ssh_host_ed25519_key
+              mountPath: {{ include "sshHostKeyPath" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
+              subPath: {{ include "sshHostKeyFileName" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
               readOnly: true
             - name: ssh-writable
-              mountPath: /etc/ssh/ssh_host_ed25519_key.pub
-              subPath: ssh_host_ed25519_key.pub
+              mountPath: {{ include "sshHostKeyPubPath" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
+              subPath: {{ include "sshHostKeyPubFileName" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
               readOnly: true
             - name: jenkins-public-key
               mountPath: /jenkins-public-key
@@ -72,9 +55,9 @@ spec:
       volumes:
         - name: ssh-ed25519-key
           secret:
-            secretName: {{ .Values.internalLinux.sshKeySecretName }}
+            secretName: {{ .Values.interfaces.jenkins.name }}-{{ .Values.internalLinux.ssh.keySecretName }}
         - name: ssh-writable
           emptyDir: {}
         - name: jenkins-public-key
           secret:
-            secretName: {{ .Values.internalLinux.jenkinsPublicKeySecretName }}
+            secretName: {{ .Values.interfaces.jenkins.name }}-{{ .Values.internalLinux.ssh.publicKeySecretName }}

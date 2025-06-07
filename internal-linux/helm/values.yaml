@@ -17,18 +17,9 @@ resources:
     cpu: 50m
     memory: 64Mi
 
-internalLinux:
-  sshKeySecretName: "internal-linux-ssh-host-key"
-  jenkinsPrivateKeySecretName: "internal-linux-jenkins-private-key"
-  jenkinsPublicKeySecretName: "internal-linux-jenkins-public-key"
-  knownHostsSecretName: "internal-linux-known-hosts"
-
-sshKeygenJob:
-  name: internal-linux-ssh-keygen
-  image:
-    repository: create-ssh-secret
-    tag: latest
-    imagePullPolicy: IfNotPresent
+interfaces:
+  jenkins:
+    name: "interface-jenkins-internal-linux"
 
 initContainer:
   image:
