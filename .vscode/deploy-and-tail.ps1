@@ -31,13 +31,23 @@ foreach ($vf in $ValuesFilesarray) {
 }
 Write-Host "Values files: $valuesArgs" -ForegroundColor Cyan
 
+# Update Helm dependencies
+Write-Host "Updating Helm dependencies..." -ForegroundColor Cyan
+$updateOutput = helm dependency update $ChartPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Helm dependency update failed:" -ForegroundColor Red
+    Write-Host $updateOutput -ForegroundColor Red
+    exit 3
+}
+Write-Host "Helm dependencies updated successfully" -ForegroundColor Green
+
 # Lint and validate the Helm chart
 Write-Host "Linting Helm chart..." -ForegroundColor Cyan
 $lintOutput = helm lint $ChartPath $valuesArgs 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Helm lint failed:" -ForegroundColor Red
     Write-Host $lintOutput -ForegroundColor Red
-    exit 3
+    exit 4
 }
 Write-Host "Helm lint passed" -ForegroundColor Green
 
