@@ -8,7 +8,8 @@ internalLinux:
     port: 2222
     jenkinsUsername: "jenkins"
     hostKeyPath:
-      prefix: "/etc/ssh/ssh_host_"
+      folder: "/etc/ssh/"
+      prefix: "ssh_host_"
       algorithm: "ed25519"
       suffix: "_key"
       pubSuffix: ".pub"

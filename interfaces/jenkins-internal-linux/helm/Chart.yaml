@@ -4,3 +4,7 @@ description: Shared ConfigMap for Jenkins and Internal Linux
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
+dependencies:
+- name: utils-helm
+  version: 0.1.0
+  repository: file://../../../utils/helm

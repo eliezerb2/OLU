@@ -10,14 +10,28 @@ responder: {{ .Values.labels.responder }}
 {{- .Template.Name | base | trimSuffix ".yaml" | lower -}}
 {{- end -}}
 
+{{/* SSH host key file name template */}}
+{{- define "sshHostKeyFileName" -}}
+{{- $path := index .Values .pathKey -}}
+{{- printf "%s%s%s" $path.prefix $path.algorithm $path.suffix -}}
+{{- end -}}
+
 {{/* SSH host key path template */}}
 {{- define "sshHostKeyPath" -}}
-{{- printf "%s%s%s" .Values.internalLinux.ssh.hostKeyPath.prefix .Values.internalLinux.ssh.hostKeyPath.algorithm .Values.internalLinux.ssh.hostKeyPath.suffix -}}
+{{- $path := index .Values .pathKey -}}
+{{- printf "%s%s" $path.folder (include "sshHostKeyFileName" .) -}}
+{{- end -}}
+
+{{/* SSH host key pub file name template */}}
+{{- define "sshHostKeyPubFileName" -}}
+{{- $path := index .Values .pathKey -}}
+{{- printf "%s%s" (include "sshHostKeyFileName" .) $path.pubSuffix -}}
 {{- end -}}
 
 {{/* SSH host key pub path template */}}
 {{- define "sshHostKeyPubPath" -}}
-{{- printf "%s%s%s%s" .Values.internalLinux.ssh.hostKeyPath.prefix .Values.internalLinux.ssh.hostKeyPath.algorithm .Values.internalLinux.ssh.hostKeyPath.suffix .Values.internalLinux.ssh.hostKeyPath.pubSuffix -}}
+{{- $path := index .Values .pathKey -}}
+{{- printf "%s%s" (include "sshHostKeyPath" .) $path.pubSuffix -}}
 {{- end -}}
 
 {{/* SSH keygen service account name */}}
