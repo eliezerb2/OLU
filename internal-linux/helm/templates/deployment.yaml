@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
   labels:
     app: {{ .Release.Name }}
 spec:
@@ -16,7 +16,7 @@ spec:
     spec:
       initContainers:
         - name: copy-ssh-keys
-          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          image: "{{ include "initContainerImage" . }}"
           command: ["sh", "-c"]
           args:
             - |
