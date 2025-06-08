@@ -48,3 +48,8 @@ responder: {{ .Values.labels.responder }}
 {{- define "configMapName" -}}
 {{- printf "%s-%s" .Release.Name .Values.configMap.name -}}
 {{- end -}}
+
+{{/* initContainer image */}}
+{{- define "initContainerImage" -}}
+{{- printf "%s:%s" .Values.utilsChart.initContainer.image.repository .Values.utilsChart.initContainer.image.tag -}}
+{{- end -}}
