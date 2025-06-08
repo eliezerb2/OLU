@@ -60,7 +60,59 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Helm template validation passed" -ForegroundColor Green
 
+# Debug the template - save rendered templates to a file for inspection
+# Create debug directory under the specific helm chart path
+$debugDir = Join-Path $ChartPath ".debug"
+if (-not (Test-Path $debugDir)) {
+    New-Item -ItemType Directory -Path $debugDir -Force | Out-Null
+}
+$debugFile = Join-Path $debugDir "$ReleaseName-debug.yaml"
+Write-Host "Debugging Helm template - saving rendered manifests to $debugFile..." -ForegroundColor Cyan
+$templateContent = helm template $ReleaseName $ChartPath $valuesArgs 2>&1
+$templateContent | Out-File -FilePath $debugFile
+
+# Check for common issues in the template
+$issues = @()
+if ($templateContent -match "Error:") {
+    $issues += "Found 'Error:' in template output"
+}
+if ($templateContent -match "Warning:") {
+    $issues += "Found 'Warning:' in template output"
+}
+if ($templateContent -match "<no value>") {
+    $issues += "Found '<no value>' placeholders in template"
+}
+if ($templateContent -match "nil pointer|nil value|%!s\(<nil>\)") {
+    $issues += "Found nil pointer or nil value references in template"
+}
+if ($templateContent -match "failed to parse|invalid YAML|syntax error") {
+    $issues += "Found YAML syntax errors in template"
+}
+if ($templateContent -match "\{\{.*\}\}") {
+    $issues += "Found unrendered template variables"
+}
+if ($templateContent -match "required value|field is required") {
+    $issues += "Found missing required fields in resources"
+}
+if ($templateContent -match "duplicate|already defined") {
+    $issues += "Found duplicate resource definitions"
+}
+
+if ($issues.Count -gt 0) {
+    Write-Host "Issues found in template:" -ForegroundColor Red
+    foreach ($issue in $issues) {
+        Write-Host "- $issue" -ForegroundColor Red
+    }
+    Write-Host "Template debugging complete. Rendered manifests saved to $debugFile" -ForegroundColor Yellow
+    Write-Host "Exiting due to template issues." -ForegroundColor Red
+    exit 5
+}
+
+Write-Host "Template debugging complete. No issues found." -ForegroundColor Green
+Write-Host "Rendered manifests saved to $debugFile" -ForegroundColor Cyan
+
 # Deploy or upgrade the Helm release
+Write-Host "Deploying Helm chart..." -ForegroundColor Cyan
 helm upgrade --install $ReleaseName $ChartPath $valuesArgs
 
 # Check if there are any pods with the specified label
