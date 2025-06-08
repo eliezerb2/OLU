@@ -20,8 +20,3 @@ resources:
 interfaces:
   jenkins:
     name: "interface-jenkins-internal-linux"
-
-initContainer:
-  image:
-    repository: busybox
-    tag: "1.36"

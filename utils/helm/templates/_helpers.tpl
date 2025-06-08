@@ -12,26 +12,26 @@ responder: {{ .Values.labels.responder }}
 
 {{/* SSH host key file name template */}}
 {{- define "sshHostKeyFileName" -}}
-{{- $path := index .Values .pathKey -}}
+{{- $path := .path -}}
 {{- printf "%s%s%s" $path.prefix $path.algorithm $path.suffix -}}
 {{- end -}}
 
 {{/* SSH host key path template */}}
 {{- define "sshHostKeyPath" -}}
-{{- $path := index .Values .pathKey -}}
-{{- printf "%s%s" $path.folder (include "sshHostKeyFileName" .) -}}
+{{- $path := .path -}}
+{{- printf "%s%s" $path.folder (include "sshHostKeyFileName" (dict "path" $path)) -}}
 {{- end -}}
 
 {{/* SSH host key pub file name template */}}
 {{- define "sshHostKeyPubFileName" -}}
-{{- $path := index .Values .pathKey -}}
-{{- printf "%s%s" (include "sshHostKeyFileName" .) $path.pubSuffix -}}
+{{- $path := .path -}}
+{{- printf "%s%s" (include "sshHostKeyFileName" (dict "path" $path)) $path.pubSuffix -}}
 {{- end -}}
 
 {{/* SSH host key pub path template */}}
 {{- define "sshHostKeyPubPath" -}}
-{{- $path := index .Values .pathKey -}}
-{{- printf "%s%s" (include "sshHostKeyPath" .) $path.pubSuffix -}}
+{{- $path := .path -}}
+{{- printf "%s%s" (include "sshHostKeyPath" (dict "path" $path)) $path.pubSuffix -}}
 {{- end -}}
 
 {{/* SSH keygen service account name */}}

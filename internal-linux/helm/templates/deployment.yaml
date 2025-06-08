@@ -42,12 +42,12 @@ spec:
             - containerPort: {{ .Values.internalLinux.ssh.port }}
           volumeMounts:
             - name: ssh-writable
-              mountPath: {{ include "sshHostKeyPath" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
-              subPath: {{ include "sshHostKeyFileName" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
+              mountPath: {{ include "sshHostKeyPath" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
+              subPath: {{ include "sshHostKeyFileName" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
               readOnly: true
             - name: ssh-writable
-              mountPath: {{ include "sshHostKeyPubPath" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
-              subPath: {{ include "sshHostKeyPubFileName" (dict "Values" .Values "pathKey" "internalLinux.ssh.hostKeyPath") | quote }}
+              mountPath: {{ include "sshHostKeyPubPath" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
+              subPath: {{ include "sshHostKeyPubFileName" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
               readOnly: true
             - name: jenkins-public-key
               mountPath: /jenkins-public-key
