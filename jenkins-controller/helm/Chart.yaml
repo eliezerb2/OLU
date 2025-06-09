@@ -3,3 +3,7 @@ name: jenkins
 version: 0.1.0
 description: A Helm chart for Kubernetes to deploy Jenkins
 appVersion: "2.426.1"
+dependencies:
+- name: utilsChart
+  version: 0.1.0
+  repository: file://../../utils/helm
