@@ -5,6 +5,7 @@ configMap:
   name: "config"
 internalLinux:
   ssh:
+    host: "internal-linux-service"
     port: 2222
     jenkinsUsername: "jenkins"
     hostKeyPath:

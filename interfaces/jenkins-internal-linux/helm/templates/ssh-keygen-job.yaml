@@ -31,9 +31,8 @@ spec:
               value: "INTERNAL_LINUX_"
             - name: SSH_USER_NAME
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.jenkinsUsername }}
-              #TODO: externalize this?
             - name: TARGET_HOST
-              value: "internal-linux-service"
+              value: {{ .Values.internalLinux.ssh.host }}
             - name: SSH_HOST_KEY_SECRET
               value: {{ .Release.Name }}-{{ .Values.internalLinux.ssh.keySecretName }}
             - name: SSH_PRIVATE_KEY_SECRET

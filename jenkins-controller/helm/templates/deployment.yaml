@@ -87,8 +87,8 @@ spec:
               echo "  UserKnownHostsFile $SSH_FOLDER_PATH/updates_downloader_known_hosts" >> $SSH_FOLDER_PATH/config
               echo "  StrictHostKeyChecking yes" >> $SSH_FOLDER_PATH/config
               echo "" >> $SSH_FOLDER_PATH/config
-              echo "Host internal-linux-service" >> $SSH_FOLDER_PATH/config
-              echo "  HostName internal-linux-service" >> $SSH_FOLDER_PATH/config
+              echo "Host {{ .Values.internalLinux.ssh.host }}" >> $SSH_FOLDER_PATH/config
+              echo "  HostName {{ .Values.internalLinux.ssh.host }}" >> $SSH_FOLDER_PATH/config
               echo "  Port {{ .Values.internalLinux.ssh.port }}" >> $SSH_FOLDER_PATH/config
               echo "  User {{ .Values.internalLinux.ssh.jenkinsUsername }}" >> $SSH_FOLDER_PATH/config
               echo "  IdentityFile $INTERNAL_LINUX_KEY_FILE_PATH" >> $SSH_FOLDER_PATH/config
