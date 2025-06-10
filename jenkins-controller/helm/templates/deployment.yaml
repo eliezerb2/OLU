@@ -58,6 +58,8 @@ spec:
           # TODO: convert this to a set of scripts
           args:
             - |
+              SSH_CONFIG_FILE_PATH="$SSH_FOLDER_PATH/config"
+
               # Remove any existing SSH keys
               rm -rf $SSH_FOLDER_PATH
 
@@ -79,22 +81,22 @@ spec:
               chmod 644 $SSH_FOLDER_PATH/internal_linux_known_hosts
 
               # Create SSH config
-              echo "Host updates-downloader" > $SSH_FOLDER_PATH/config
-              echo "  HostName updates-downloader" >> $SSH_FOLDER_PATH/config
-              echo "  Port {{ .Values.updatesDownloader.sshPort }}" >> $SSH_FOLDER_PATH/config
-              echo "  User {{ .Values.updatesDownloader.sshJenkinsUsername }}" >> $SSH_FOLDER_PATH/config
-              echo "  IdentityFile $SSH_FOLDER_PATH/updates_downloader_id_ed25519" >> $SSH_FOLDER_PATH/config
-              echo "  UserKnownHostsFile $SSH_FOLDER_PATH/updates_downloader_known_hosts" >> $SSH_FOLDER_PATH/config
-              echo "  StrictHostKeyChecking yes" >> $SSH_FOLDER_PATH/config
-              echo "" >> $SSH_FOLDER_PATH/config
-              echo "Host {{ .Values.internalLinux.ssh.host }}" >> $SSH_FOLDER_PATH/config
-              echo "  HostName {{ .Values.internalLinux.ssh.host }}" >> $SSH_FOLDER_PATH/config
-              echo "  Port {{ .Values.internalLinux.ssh.port }}" >> $SSH_FOLDER_PATH/config
-              echo "  User {{ .Values.internalLinux.ssh.jenkinsUsername }}" >> $SSH_FOLDER_PATH/config
-              echo "  IdentityFile $INTERNAL_LINUX_KEY_FILE_PATH" >> $SSH_FOLDER_PATH/config
-              echo "  UserKnownHostsFile $SSH_FOLDER_PATH/internal_linux_known_hosts" >> $SSH_FOLDER_PATH/config
-              echo "  StrictHostKeyChecking yes" >> $SSH_FOLDER_PATH/config
-              chmod 600 $SSH_FOLDER_PATH/config
+              echo "Host updates-downloader" > $SSH_CONFIG_FILE_PATH
+              echo "  HostName updates-downloader" >> $SSH_CONFIG_FILE_PATH
+              echo "  Port {{ .Values.updatesDownloader.sshPort }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  User {{ .Values.updatesDownloader.sshJenkinsUsername }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  IdentityFile $SSH_FOLDER_PATH/updates_downloader_id_ed25519" >> $SSH_CONFIG_FILE_PATH
+              echo "  UserKnownHostsFile $SSH_FOLDER_PATH/updates_downloader_known_hosts" >> $SSH_CONFIG_FILE_PATH
+              echo "  StrictHostKeyChecking yes" >> $SSH_CONFIG_FILE_PATH
+              echo "" >> $SSH_CONFIG_FILE_PATH
+              echo "Host {{ .Values.internalLinux.ssh.host }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  HostName {{ .Values.internalLinux.ssh.host }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  Port {{ .Values.internalLinux.ssh.port }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  User {{ .Values.internalLinux.ssh.jenkinsUsername }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  IdentityFile $INTERNAL_LINUX_KEY_FILE_PATH" >> $SSH_CONFIG_FILE_PATH
+              echo "  UserKnownHostsFile $SSH_FOLDER_PATH/internal_linux_known_hosts" >> $SSH_CONFIG_FILE_PATH
+              echo "  StrictHostKeyChecking yes" >> $SSH_CONFIG_FILE_PATH
+              chmod 600 $SSH_CONFIG_FILE_PATH
 
               # Set proper ownership for all files
               chown -R 1000:1000 $SSH_FOLDER_PATH
