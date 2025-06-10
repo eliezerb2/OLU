@@ -67,7 +67,7 @@ cp "${USER_KEY_PATH}.pub" "$USER_AUTHORIZED_KEYS_PATH" \
 # Prepare secret definitions: name and --from-file args
 log "Preparing secrets definitions..."
 secrets="
-$SSH_PRIVATE_KEY_SECRET --from-file=id_${SSH_KEY_ALGORITHM}=${USER_KEY_PATH}
+$SSH_PRIVATE_KEY_SECRET --from-file=${SSH_KEY_ALGORITHM}=${USER_KEY_PATH}
 $SSH_PUBLIC_KEY_SECRET --from-file=authorized_keys=${USER_AUTHORIZED_KEYS_PATH}
 $KNOWN_HOSTS_SECRET --from-file=known_hosts=${KNOWN_HOSTS_PATH}
 $SSH_HOST_KEY_SECRET --from-file=ssh_host_${SSH_KEY_ALGORITHM}_key=/tmp/ssh_host_${SSH_KEY_ALGORITHM}_key --from-file=ssh_host_${SSH_KEY_ALGORITHM}_key.pub=/tmp/ssh_host_${SSH_KEY_ALGORITHM}_key.pub
