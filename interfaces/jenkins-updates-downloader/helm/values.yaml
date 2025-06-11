@@ -1,0 +1,27 @@
+labels:
+  initiator: "jenkins"
+  responder: "updates-downloader"
+configMap:
+  name: "config"
+updatesDownloader:
+  ssh:
+    host: "updates-downloader-service"
+    port: 2222
+    jenkinsUsername: "jenkins"
+    hostKeyPath:
+      folder: "/etc/ssh/"
+      prefix: "ssh_host_"
+      algorithm: "ed25519"
+      suffix: "_key"
+      pubSuffix: ".pub"
+    keySecretName: "ssh-host-key"
+    privateKeySecretName: "ssh-private-key"
+    publicKeySecretName: "ssh-public-key"
+    knownHostsSecretName: "ssh-known-hosts"
+sshKeygenJob:
+  roleName: ssh-keygen
+  serviceAccountName: ssh-keygen
+  image:
+    repository: create-ssh-secret
+    tag: latest
+    imagePullPolicy: IfNotPresent

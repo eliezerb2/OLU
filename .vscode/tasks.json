@@ -11,25 +11,27 @@
             "group": "test",
             "problemMatcher": []
         },
-        { "label": "jenkins-updates-downloader-config - Install ConfigMap",
+        { "label": "interface-jenkins-updates-downloader - Install",
             "type": "shell",
-            "command": "kubectl",
+            "command": "powershell",
             "args": [
-                "apply",
-                "-f",
-                "./interfaces/jenkins-updates-downloader.yaml"
+                "-File",
+                ".vscode/deploy-and-tail.ps1",
+                "-ReleaseName", "updates-downloader",
+                "-ChartPath", "./interfaces/jenkins-updates-downloader/helm",
+                "-ValuesFile", "./interfaces/jenkins-updates-downloader/helm/values.yaml",
+                "-AppLabel", "interface-jenkins-updates-downloader"
             ],
             "group": "test",
             "problemMatcher": []
         },
-        { "label": "jenkins-updates-downloader-config - Uninstall ConfigMap",
+        { "label": "interface-jenkins-updates-downloader - Uninstall",
             "type": "shell",
-            "command": "kubectl",
+            "command": "powershell",
             "args": [
-                "delete",
-                "configmap",
-                "jenkins-updates-downloader-config",
-                "--ignore-not-found"
+                "-File",
+                ".vscode/Uninstall-Service.ps1",
+                "-ServiceName", "interface-jenkins-updates-downloader"
             ],
             "group": "test",
             "problemMatcher": []

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: interface-jenkins-updates-downloader
+description: Shared ConfigMap for Jenkins and Updates Downloader
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+dependencies:
+- name: utilsChart
+  version: 0.1.0
+  repository: file://../../../utils/helm
