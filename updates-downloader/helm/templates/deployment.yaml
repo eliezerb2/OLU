@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
   labels:
     app: {{ .Release.Name }}
 spec:
@@ -15,26 +15,11 @@ spec:
         app: {{ .Release.Name }}
     spec:
       initContainers:
-        - name: wait-for-ssh-keys
-          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
-          command: ["sh", "-c"]
-          args:
-            - |
-              for i in $(seq 1 60); do
-                if [ -f /ssh-keys/ssh_host_ed25519_key ]; then
-                  exit 0
-                fi
-                echo "Waiting for SSH host keys Secret..."
-                sleep 2
-              done
-              echo "SSH host keys Secret not found!" >&2
-              exit 1
-          volumeMounts:
-            - name: ssh-ed25519-key
-              mountPath: /ssh-keys
         - name: copy-ssh-keys
-          image: "{{ .Values.initContainer.image.repository }}:{{ .Values.initContainer.image.tag }}"
+          image: "{{ include "initContainerImage" . }}"
           command: ["sh", "-c"]
+          # TODO: convert this to a set of scripts
+          # TODO: parameterize the algorithm
           args:
             - |
               cp /ssh-keys/ssh_host_ed25519_key /ssh-writable/ && \
@@ -50,8 +35,14 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.interfaces.jenkins.name }}-config
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.updatesDownloader.ssh.port }}
+          # TODO: do we need these environment variables?
           env:
             {{- range .Values.env0 }}
             - name: {{ .name | quote }}
@@ -61,20 +52,14 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}
-            - name: UPDATES_DOWNLOADER_SSH_PORT
-              value: "{{ .Values.updatesDownloader.sshPort }}"
-            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
-              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
-          ports:
-            - containerPort: {{ .Values.updatesDownloader.sshPort }}
           volumeMounts:
             - name: ssh-writable
-              mountPath: /etc/ssh/ssh_host_ed25519_key
-              subPath: ssh_host_ed25519_key
+              mountPath: {{ include "sshHostKeyPath" (dict "path" .Values.updatesDownloader.ssh.hostKeyPath) | quote }}
+              subPath: {{ include "sshHostKeyFileName" (dict "path" .Values.updatesDownloader.ssh.hostKeyPath) | quote }}
               readOnly: true
             - name: ssh-writable
-              mountPath: /etc/ssh/ssh_host_ed25519_key.pub
-              subPath: ssh_host_ed25519_key.pub
+              mountPath: {{ include "sshHostKeyPubPath" (dict "path" .Values.updatesDownloader.ssh.hostKeyPath) | quote }}
+              subPath: {{ include "sshHostKeyPubFileName" (dict "path" .Values.updatesDownloader.ssh.hostKeyPath) | quote }}
               readOnly: true
             - name: jenkins-public-key
               mountPath: /jenkins-public-key
@@ -82,9 +67,9 @@ spec:
       volumes:
         - name: ssh-ed25519-key
           secret:
-            secretName: {{ .Values.updatesDownloader.sshKeySecretName }}
+            secretName: {{ .Values.interfaces.jenkins.name }}-{{ .Values.updatesDownloader.ssh.keySecretName }}
         - name: ssh-writable
           emptyDir: {}
         - name: jenkins-public-key
           secret:
-            secretName: {{ .Values.updatesDownloader.jenkinsPublicKeySecretName }}
+            secretName: {{ .Values.interfaces.jenkins.name }}-{{ .Values.updatesDownloader.ssh.publicKeySecretName }}

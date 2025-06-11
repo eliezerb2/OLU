@@ -17,6 +17,10 @@ resources:
     cpu: 50m
     memory: 64Mi
 
+interfaces:
+  jenkins:
+    name: "interface-jenkins-updates-downloader"
+
 env1:
   - name: UPDATER_ROCKY_REPO_ID
     value: "appstream"
@@ -30,15 +34,3 @@ env1:
     value: "x86_64"
   - name: UPDATER_TIMEOUT_SECONDS
     value: "20"
-
-sshKeygenJob:
-  name: ssh-keygen
-  image:
-    repository: create-ssh-secret
-    tag: latest
-    imagePullPolicy: IfNotPresent
-
-initContainer:
-  image:
-    repository: busybox
-    tag: "1.36"

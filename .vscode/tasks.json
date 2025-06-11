@@ -17,7 +17,7 @@
             "args": [
                 "-File",
                 ".vscode/deploy-and-tail.ps1",
-                "-ReleaseName", "updates-downloader",
+                "-ReleaseName", "interface-jenkins-updates-downloader",
                 "-ChartPath", "./interfaces/jenkins-updates-downloader/helm",
                 "-ValuesFile", "./interfaces/jenkins-updates-downloader/helm/values.yaml",
                 "-AppLabel", "interface-jenkins-updates-downloader"
