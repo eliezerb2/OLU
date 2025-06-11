@@ -24,5 +24,8 @@ COPY ${MODULE_PATH}/docker/files/ /
 # Set permissions for executables
 RUN find ${APP_FOLDER_PATH} -type f -name "*.sh" -exec chmod +x {} \;
 
+# TODO: give only jenkins permissions to yum.repos.d, and not all users
+RUN chmod 777 /etc/yum.repos.d/
+
 # Use the entrypoint script
 ENTRYPOINT ${APP_FOLDER_PATH}/entrypoint.sh

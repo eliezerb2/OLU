@@ -18,6 +18,8 @@ spec:
         - name: copy-ssh-keys
           image: "{{ include "initContainerImage" . }}"
           command: ["sh", "-c"]
+          # TODO: convert this to a set of scripts
+          # TODO: parameterize the algorithm
           args:
             - |
               cp /ssh-keys/ssh_host_ed25519_key /ssh-writable/ && \
