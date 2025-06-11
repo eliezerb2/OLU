@@ -190,8 +190,8 @@
                 "-File",
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "nexus-repo",
-                "-ChartPath", "./nexus/helm",
-                "-ValuesFile", "./nexus/helm/values.yaml",
+                "-ChartPath", "./nexus-repo/helm",
+                "-ValuesFile", "./nexus-repo/helm/values.yaml",
                 "-AppLabel", "nexus",
                 "-LogFilePath", "/nexus-data/init_nexus.log"
             ],
@@ -201,55 +201,14 @@
             },
             "problemMatcher": []
         },
-        { "label": "Nexus - Open Pod Shells",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/open-pod-shells.ps1",
-                "-Prefix",
-                "nexus"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": false
-            },
-            "problemMatcher": []
-        },
-        { "label": "Nexus - Start Repository",
-            "type": "shell",
-            "command": "helm",
-            "args": [
-                "upgrade",
-                "--install",
-                "nexus-repo",
-                "./nexus/helm",
-                "--values",
-                "./nexus/helm/values.yaml"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        { "label": "Nexus - Stop All",
-            "type": "shell",
-            "command": "powershell",
-            "args": [
-                "-File",
-                ".vscode/stop-nexus.ps1"
-            ],
-            "group": "test",
-            "problemMatcher": []
-        },
         { "label": "Nexus - Stop Repository",
             "dependsOn": [],
             "type": "shell",
             "command": "powershell",
             "args": [
-                "-Command",
-                "helm uninstall nexus-repo; kubectl delete pod -l app.kubernetes.io/name=nexus,app.kubernetes.io/component=admin-password --ignore-not-found"
+                "-File",
+                ".vscode/Uninstall-Service.ps1",
+                "-ServiceName", "nexus-repo"
             ],
             "group": "test",
             "problemMatcher": []
