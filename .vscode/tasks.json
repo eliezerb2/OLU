@@ -132,7 +132,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "jenkins-controller",
                 "-ChartPath", "./jenkins-controller/helm",
-                "-ValuesFile", "./jenkins-controller/helm/values.yaml,./interfaces/jenkins-internal-linux/helm/values.yaml",
+                "-ValuesFile", "./jenkins-controller/helm/values.yaml,./interfaces/jenkins-internal-linux/helm/values.yaml,./interfaces/jenkins-updates-downloader/helm/values.yaml",
                 "-AppLabel", "jenkins-controller"
             ],
             "group": {
