@@ -14,15 +14,16 @@ persistence:
   size: 8Gi
 adminPassword: "admin"
 resources: {}
+configMap:
+  name: "config"
+jenkins:
+  homePath: /var/jenkins_home
+  sshFolderName: .ssh
 env1:
   - name: ADMIN_USER
     value: "admin"
   - name: ADMIN_PASSWORD
     value: "newpassword"
-initContainer:
-  image:
-    repository: busybox
-    tag: "1.36"
 updatesDownloader:
   sshPort: 2222
   sshJenkinsUsername: jenkins
@@ -30,3 +31,6 @@ updatesDownloader:
   jenkinsPrivateKeySecretName: jenkins-ssh-private-key
   jenkinsPublicKeySecretName: jenkins-ssh-public-key
   knownHostsSecretName: updates-downloader-known-hosts
+interfaces:
+  internalLinux:
+    name: "interface-jenkins-internal-linux"

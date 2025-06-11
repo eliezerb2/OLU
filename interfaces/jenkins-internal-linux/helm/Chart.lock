@@ -1,0 +1,6 @@
+dependencies:
+- name: utilsChart
+  repository: file://../../../utils/helm
+  version: 0.1.0
+digest: sha256:5e24f8d3e2423bfdb542503b3974722bfa702cd31d01b44d058ea865e65a751d
+generated: "2025-06-08T21:40:47.8004802+03:00"

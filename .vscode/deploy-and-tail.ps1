@@ -15,7 +15,7 @@ Write-Host "  AppLabel: $AppLabel" -ForegroundColor Cyan
 Write-Host "  LogFilePath: $LogFilePath" -ForegroundColor Cyan
 
 if (-not $ReleaseName -or -not $ChartPath -or -not $ValuesFile -or -not $AppLabel) {
-    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <name> -ChartPath <path> -ValuesFile <file1> <file2> ... -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
+    Write-Host "Usage: .vscode/deploy-and-tail.ps1 -ReleaseName <n> -ChartPath <path> -ValuesFile <file1> <file2> ... -AppLabel <label> [-LogFilePath <path>]" -ForegroundColor Yellow
     exit 1
 }
 
@@ -31,16 +31,126 @@ foreach ($vf in $ValuesFilesarray) {
 }
 Write-Host "Values files: $valuesArgs" -ForegroundColor Cyan
 
+# Update Helm dependencies
+Write-Host "Updating Helm dependencies..." -ForegroundColor Cyan
+$updateOutput = helm dependency update $ChartPath 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Helm dependency update failed:" -ForegroundColor Red
+    Write-Host $updateOutput -ForegroundColor Red
+    exit 3
+}
+Write-Host "Helm dependencies updated successfully" -ForegroundColor Green
+
+# Lint and validate the Helm chart
+Write-Host "Linting Helm chart..." -ForegroundColor Cyan
+$lintOutput = helm lint $ChartPath $valuesArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Helm lint failed:" -ForegroundColor Red
+    Write-Host $lintOutput -ForegroundColor Red
+    exit 4
+}
+Write-Host "Helm lint passed" -ForegroundColor Green
+
+Write-Host "Validating Helm templates..." -ForegroundColor Cyan
+$templateOutput = helm template $ReleaseName $ChartPath $valuesArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Helm template validation failed:" -ForegroundColor Red
+    Write-Host $templateOutput -ForegroundColor Red
+    exit 4
+}
+Write-Host "Helm template validation passed" -ForegroundColor Green
+
+# Debug the template - save rendered templates to a file for inspection
+# Create debug directory under the specific helm chart path
+$debugDir = Join-Path $ChartPath ".debug"
+if (-not (Test-Path $debugDir)) {
+    New-Item -ItemType Directory -Path $debugDir -Force | Out-Null
+}
+$debugFile = Join-Path $debugDir "$ReleaseName-debug.yaml"
+Write-Host "Debugging Helm template - saving rendered manifests to $debugFile..." -ForegroundColor Cyan
+$templateContent = helm template $ReleaseName $ChartPath $valuesArgs 2>&1
+$templateContent | Out-File -FilePath $debugFile
+
+# Check for common issues in the template
+$issues = @()
+if ($templateContent -match "Error:") {
+    $issues += "Found 'Error:' in template output"
+}
+if ($templateContent -match "Warning:") {
+    $issues += "Found 'Warning:' in template output"
+}
+if ($templateContent -match "<no value>") {
+    $issues += "Found '<no value>' placeholders in template"
+}
+if ($templateContent -match "nil pointer|nil value|%!s\(<nil>\)") {
+    $issues += "Found nil pointer or nil value references in template"
+}
+if ($templateContent -match "failed to parse|invalid YAML|syntax error") {
+    $issues += "Found YAML syntax errors in template"
+}
+if ($templateContent -match "\{\{.*\}\}") {
+    $issues += "Found unrendered template variables"
+}
+if ($templateContent -match "required value|field is required") {
+    $issues += "Found missing required fields in resources"
+}
+if ($templateContent -match "duplicate|already defined") {
+    $issues += "Found duplicate resource definitions"
+}
+
+if ($issues.Count -gt 0) {
+    Write-Host "Issues found in template:" -ForegroundColor Red
+    foreach ($issue in $issues) {
+        Write-Host "- $issue" -ForegroundColor Red
+    }
+    Write-Host "Template debugging complete. Rendered manifests saved to $debugFile" -ForegroundColor Yellow
+    Write-Host "Exiting due to template issues." -ForegroundColor Red
+    exit 5
+}
+
+Write-Host "Template debugging complete. No issues found." -ForegroundColor Green
+Write-Host "Rendered manifests saved to $debugFile" -ForegroundColor Cyan
+
 # Deploy or upgrade the Helm release
+Write-Host "Deploying Helm chart..." -ForegroundColor Cyan
 helm upgrade --install $ReleaseName $ChartPath $valuesArgs
+
+# Check if there are any pods with the specified label
+$podCount = 0
+$maxRetries = 10
+$retryCount = 0
+
+while ($retryCount -lt $maxRetries) {
+    $podCount = (kubectl get pods -l app=$AppLabel --no-headers 2>$null | Measure-Object -Line).Lines
+    if ($podCount -gt 0) {
+        break
+    }
+    Write-Host "No pods found with label app=$AppLabel. Retry $($retryCount+1)/$maxRetries..." -ForegroundColor Yellow
+    $retryCount++
+    Start-Sleep -Seconds 2
+}
+
+if ($podCount -eq 0) {
+    Write-Host "No pods found with label app=$AppLabel after $maxRetries retries. Exiting." -ForegroundColor Yellow
+    exit 0
+}
 
 # Wait for the pod to be ready and get the pod name
 $pod = $null
 
 do {
     $pod = kubectl get pods -l app=$AppLabel -o jsonpath='{.items[0].metadata.name}'
-    Start-Sleep -Seconds 2
-} while (-not $pod -or (kubectl get pod $pod -o jsonpath='{.status.phase}') -ne 'Running')
+    if (-not $pod) {
+        Write-Host "Waiting for pod with label app=$AppLabel to be created..."
+        Start-Sleep -Seconds 2
+    } else {
+        $phase = kubectl get pod $pod -o jsonpath='{.status.phase}' 2>$null
+        if ($phase -ne 'Running') {
+            Write-Host "Pod $pod is in phase: $phase. Waiting..."
+            Start-Sleep -Seconds 2
+        }
+    }
+} while (-not $pod -or (kubectl get pod $pod -o jsonpath='{.status.phase}' 2>$null) -ne 'Running')
 
 # Tail the logs in a new PowerShell window
 $tailCmd = "kubectl logs -f $pod"

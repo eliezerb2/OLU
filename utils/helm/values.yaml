@@ -12,3 +12,7 @@ updatesDownloader:
   jenkinsPrivateKeySecretName: jenkins-ssh-private-key
   jenkinsPublicKeySecretName: jenkins-ssh-public-key
   knownHostsSecretName: updates-downloader-known-hosts
+initContainer:
+  image:
+    repository: busybox
+    tag: "1.36"

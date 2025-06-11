@@ -1,0 +1,4 @@
+# Helm chart dependencies
+**/charts/
+# Ignore helm debug directories
+**/.debug/

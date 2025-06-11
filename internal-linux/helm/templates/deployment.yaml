@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
   labels:
     app: {{ .Release.Name }}
 spec:
@@ -14,9 +14,52 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: copy-ssh-keys
+          image: "{{ include "initContainerImage" . }}"
+          command: ["sh", "-c"]
+          # TODO: convert this to a set of scripts
+          # TODO: parameterize the algorithm
+          args:
+            - |
+              cp /ssh-keys/ssh_host_ed25519_key /ssh-writable/ && \
+              cp /ssh-keys/ssh_host_ed25519_key.pub /ssh-writable/ && \
+              chmod 600 /ssh-writable/ssh_host_ed25519_key && \
+              chmod 644 /ssh-writable/ssh_host_ed25519_key.pub
+          volumeMounts:
+            - name: ssh-ed25519-key
+              mountPath: /ssh-keys
+            - name: ssh-writable
+              mountPath: /ssh-writable
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: interface-jenkins-internal-linux-config
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.internalLinux.ssh.port }}
+          volumeMounts:
+            - name: ssh-writable
+              mountPath: {{ include "sshHostKeyPath" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
+              subPath: {{ include "sshHostKeyFileName" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
+              readOnly: true
+            - name: ssh-writable
+              mountPath: {{ include "sshHostKeyPubPath" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
+              subPath: {{ include "sshHostKeyPubFileName" (dict "path" .Values.internalLinux.ssh.hostKeyPath) | quote }}
+              readOnly: true
+            - name: jenkins-public-key
+              mountPath: /jenkins-public-key
+              readOnly: true
+      volumes:
+        - name: ssh-ed25519-key
+          secret:
+            secretName: {{ .Values.interfaces.jenkins.name }}-{{ .Values.internalLinux.ssh.keySecretName }}
+        - name: ssh-writable
+          emptyDir: {}
+        - name: jenkins-public-key
+          secret:
+            secretName: {{ .Values.interfaces.jenkins.name }}-{{ .Values.internalLinux.ssh.publicKeySecretName }}

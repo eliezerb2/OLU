@@ -1,0 +1,5 @@
+[linux-updates]
+name=Linux Updates from Nexus Repository
+baseurl=${NEXUS_URL}/repository/linux-updates/
+enabled=1
+gpgcheck=0
