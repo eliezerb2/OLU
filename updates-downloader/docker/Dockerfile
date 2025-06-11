@@ -1,11 +1,7 @@
 FROM rockylinux:9.3
 
-ENV UPDATER_COMMAND="/app/get-updates.sh"
-
-# Run updates to get latest packages
-RUN dnf update -y && \
-    dnf clean all && \
-    rm -rf /var/cache/dnf
+ARG MODULE_PATH
+ENV APP_FOLDER_PATH=/app
 
 # Install reposync dependency
 RUN dnf install -y dnf-utils
@@ -25,11 +21,14 @@ RUN dnf clean all && \
 RUN echo "alias ll='ls -l'" >> ~/.bashrc && \
     echo "alias ll='ls -l'" >> /etc/bash.bashrc
 
-# Copy scripts and files from docker/files to their corresponding locations in the image
-COPY files/ /
+# Copy utils files first
+COPY utils/docker/files/ /
 
-# Ensure scripts are executable
-RUN find /app -type f -name "*.sh" -exec chmod +x {} \;
+# Copy module-specific files (will overwrite any conflicting files)
+COPY ${MODULE_PATH}/docker/files/ /
 
-# Use the new entrypoint script
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Set permissions for executables
+RUN find ${APP_FOLDER_PATH} -type f -name "*.sh" -exec chmod +x {} \;
+
+# Use the entrypoint script
+ENTRYPOINT ${APP_FOLDER_PATH}/entrypoint.sh

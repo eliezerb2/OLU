@@ -278,7 +278,7 @@
                 ".vscode/deploy-and-tail.ps1",
                 "-ReleaseName", "updates-downloader",
                 "-ChartPath", "./updates-downloader/helm",
-                "-ValuesFile", "./updates-downloader/helm/values.yaml,./utils/helm/values.yaml",
+                "-ValuesFile", "./updates-downloader/helm/values.yaml,./interfaces/jenkins-updates-downloader/helm/values.yaml",
                 "-AppLabel", "updates-downloader"
             ],
             "group": {
@@ -287,7 +287,7 @@
             },
             "problemMatcher": []
         },
-        { "label": "Updates Downloader - Stop",
+        { "label": "Updates Downloader - Uninstall",
             "type": "shell",
             "command": "powershell",
             "args": [
