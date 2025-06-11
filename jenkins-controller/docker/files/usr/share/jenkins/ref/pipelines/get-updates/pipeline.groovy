@@ -1,15 +1,7 @@
 // Jenkins pipeline to SSH into updates-downloader and run get-updates.sh
 // Parameterized for maintainability
 
-def SSH_USER = env.UPDATES_DOWNLOADER_SSH_USER ?: 'jenkins'
-def SSH_HOST = env.UPDATES_DOWNLOADER_SSH_HOST ?: 'updates-downloader'
-def SSH_PORT = env.UPDATES_DOWNLOADER_SSH_PORT ?: '2222'
-def REMOTE_COMMAND = env.UPDATES_DOWNLOADER_COMMAND ?: '/app/get-updates.sh'
-def SSH_KEY_PATH = env.UPDATES_DOWNLOADER_SSH_KEY_PATH ?: '~/.ssh/id_ed25519'
-
-def sshCmd = "ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=yes -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} '${REMOTE_COMMAND}'"
-
-def logCmd = "ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=yes -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} 'tail -n 100 /var/log/get-updates.log'"
+def REMOTE_COMMAND = '/app/get-updates.sh'
 
 pipeline {
     agent any
@@ -17,7 +9,13 @@ pipeline {
         stage('Fetch UBI Updates via SSH') {
             steps {
                 script {
-                    echo "Running update fetch command on ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
+                    // Use sh command to extract environment variables starting with UPDATER_
+                    def updaterEnvVars = sh(script: "env | grep '^UPDATER_' || echo ''", returnStdout: true).trim()
+                    def formattedEnvVars = updaterEnvVars ? updaterEnvVars.replaceAll('\n', ' ') : ''
+                    
+                    def sshCmd = "ssh -o StrictHostKeyChecking=yes ${env.UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME}@${env.UPDATES_DOWNLOADER_HOST_NAME} '${formattedEnvVars} ${REMOTE_COMMAND}'"
+                    def logCmd = "ssh -o StrictHostKeyChecking=yes ${env.UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME}@${env.UPDATES_DOWNLOADER_HOST_NAME} 'tail -n 100 /var/log/get-updates.log'"
+                    echo "Running update fetch command on ${env.UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME}@${env.UPDATES_DOWNLOADER_HOST_NAME}:${env.UPDATES_DOWNLOADER_SSH_PORT}"
                     try {
                         sh sshCmd
                     } catch (err) {
@@ -31,6 +29,7 @@ pipeline {
         failure {
             echo 'Update fetch failed. Fetching remote log for details.'
             script {
+                def logCmd = "ssh -o StrictHostKeyChecking=yes ${env.UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME}@${env.UPDATES_DOWNLOADER_HOST_NAME} 'tail -n 100 /var/log/get-updates.log'"
                 sh logCmd
             }
         }

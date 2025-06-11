@@ -20,11 +20,11 @@ spec:
         - name: jenkins
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          envFrom:
-            - configMapRef:
-                name: {{ include "configMapName" . }}
           ports:
             - containerPort: 8080
+          envFrom:
+            {{- include "envFromConfigMaps" . | nindent 12 }}
+          # TODO: do we need these environment variables?
           env:
             - name: JENKINS_ADMIN_ID
               value: "admin"
@@ -41,10 +41,6 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}          
-            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
-              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
-            - name: INTERNAL_LINUX_SSH_JENKINS_USERNAME
-              value: "{{ .Values.internalLinux.ssh.jenkinsUsername }}"
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
@@ -52,8 +48,7 @@ spec:
         - name: setup-ssh
           image: "{{ include "initContainerImage" . }}"
           envFrom:
-            - configMapRef:
-                name: {{ include "configMapName" . }}
+            {{- include "envFromConfigMaps" . | nindent 12 }}
           command: ["sh", "-c"]
           # TODO: convert this to a set of scripts
           # TODO: replace {{ .Values.internalLinux.ssh.hostKeyPath.algorithm }}
@@ -68,25 +63,23 @@ spec:
               chmod 700 $SSH_FOLDER_PATH
 
               # Copy SSH keys with proper permissions
-              # cp /updates-downloader-ssh-key/id_ed25519 $SSH_FOLDER_PATH/updates_downloader_id_ed25519
-              # chmod 600 $SSH_FOLDER_PATH/updates_downloader_id_ed25519
-
+              cp /{{ include "updatesDownloaderSSHSecretName" . }}/{{ .Values.updatesDownloader.ssh.hostKeyPath.algorithm }} $UPDATES_DOWNLOADER_KEY_FILE_PATH
+              chmod 600 $UPDATES_DOWNLOADER_KEY_FILE_PATH
               cp /{{ include "internal-linux.ssh-key.secret-name" . }}/{{ .Values.internalLinux.ssh.hostKeyPath.algorithm }} $INTERNAL_LINUX_KEY_FILE_PATH
               chmod 600 $INTERNAL_LINUX_KEY_FILE_PATH
 
               # Copy known_hosts with proper permissions
-              # cp /updates-downloader-known-hosts/known_hosts $SSH_FOLDER_PATH/updates_downloader_known_hosts
-              # chmod 644 $SSH_FOLDER_PATH/updates_downloader_known_hosts
-
+              cp /{{ include "updatesDownloaderSSHKnownHostsSecretName" . }}/known_hosts $SSH_FOLDER_PATH/updates_downloader_known_hosts
+              chmod 644 $SSH_FOLDER_PATH/updates_downloader_known_hosts
               cp /{{ include "internal-linux.known-hosts.secret-name" . }}/known_hosts $SSH_FOLDER_PATH/internal_linux_known_hosts
               chmod 644 $SSH_FOLDER_PATH/internal_linux_known_hosts
 
               # Create SSH config
-              echo "Host updates-downloader" > $SSH_CONFIG_FILE_PATH
-              echo "  HostName updates-downloader" >> $SSH_CONFIG_FILE_PATH
-              echo "  Port {{ .Values.updatesDownloader.sshPort }}" >> $SSH_CONFIG_FILE_PATH
-              echo "  User {{ .Values.updatesDownloader.sshJenkinsUsername }}" >> $SSH_CONFIG_FILE_PATH
-              echo "  IdentityFile $SSH_FOLDER_PATH/updates_downloader_id_ed25519" >> $SSH_CONFIG_FILE_PATH
+              echo "Host {{ .Values.updatesDownloader.ssh.host }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  HostName {{ .Values.updatesDownloader.ssh.host }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  Port {{ .Values.updatesDownloader.ssh.port }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  User {{ .Values.updatesDownloader.ssh.jenkinsUsername }}" >> $SSH_CONFIG_FILE_PATH
+              echo "  IdentityFile $UPDATES_DOWNLOADER_KEY_FILE_PATH" >> $SSH_CONFIG_FILE_PATH
               echo "  UserKnownHostsFile $SSH_FOLDER_PATH/updates_downloader_known_hosts" >> $SSH_CONFIG_FILE_PATH
               echo "  StrictHostKeyChecking yes" >> $SSH_CONFIG_FILE_PATH
               echo "" >> $SSH_CONFIG_FILE_PATH
@@ -104,12 +97,12 @@ spec:
           volumeMounts:
             - name: jenkins-home
               mountPath: {{ .Values.jenkins.homePath }}
-            # - name: updates-downloader-ssh-key
-            #   mountPath: /updates-downloader-ssh-key
-            #   readOnly: true
-            # - name: updates-downloader-known-hosts
-            #   mountPath: /updates-downloader-known-hosts
-            #   readOnly: true
+            - name: {{ include "updatesDownloaderSSHSecretName" . }}
+              mountPath: /{{ include "updatesDownloaderSSHSecretName" . }}
+              readOnly: true
+            - name: {{ include "updatesDownloaderSSHKnownHostsSecretName" . }}
+              mountPath: /{{ include "updatesDownloaderSSHKnownHostsSecretName" . }}
+              readOnly: true
             - name: {{ include "internal-linux.ssh-key.secret-name" . }}
               mountPath: /{{ include "internal-linux.ssh-key.secret-name" . }}
               readOnly: true
@@ -117,14 +110,14 @@ spec:
               mountPath: /{{ include "internal-linux.known-hosts.secret-name" . }}
               readOnly: true
       volumes:
-        # - name: updates-downloader-ssh-key
-        #   secret:
-        #     secretName: {{ .Values.updatesDownloader.jenkinsPrivateKeySecretName }}
-        #     defaultMode: 0600
-        # - name: updates-downloader-known-hosts
-        #   secret:
-        #     secretName: {{ .Values.updatesDownloader.knownHostsSecretName }}
-        #     defaultMode: 0644
+        - name: {{ include "updatesDownloaderSSHSecretName" . }}
+          secret:
+            secretName: {{ include "updatesDownloaderSSHSecretName" . }}
+            defaultMode: 0600
+        - name: {{ include "updatesDownloaderSSHKnownHostsSecretName" . }}
+          secret:
+            secretName: {{ include "updatesDownloaderSSHKnownHostsSecretName" . }}
+            defaultMode: 0644
         - name: {{ include "internal-linux.ssh-key.secret-name" . }}
           secret:
             secretName: {{ include "internal-linux.ssh-key.secret-name" . }}

@@ -7,8 +7,6 @@ set -euo pipefail
 
 # TODO: use logging library
 
-mkdir -p "$UPDATER_DOWNLOAD_DIR"
-
 {
     echo "[INFO] Fetching Rocky Linux updates from: $UPDATER_ROCKY_REPO_URL"
     echo "[INFO] Download directory: $UPDATER_DOWNLOAD_DIR"
@@ -31,4 +29,4 @@ mkdir -p "$UPDATER_DOWNLOAD_DIR"
 
     echo "[INFO] Update fetch complete."
     echo "[INFO] End time: $(date)"
-} | tee -a "$UPDATER_LOG_FILE"
+}

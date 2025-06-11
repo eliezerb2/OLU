@@ -24,13 +24,8 @@ env1:
     value: "admin"
   - name: ADMIN_PASSWORD
     value: "newpassword"
-updatesDownloader:
-  sshPort: 2222
-  sshJenkinsUsername: jenkins
-  sshKeySecretName: updates-downloader-ssh-host-keys
-  jenkinsPrivateKeySecretName: jenkins-ssh-private-key
-  jenkinsPublicKeySecretName: jenkins-ssh-public-key
-  knownHostsSecretName: updates-downloader-known-hosts
 interfaces:
   internalLinux:
     name: "interface-jenkins-internal-linux"
+  updatesDownloader:
+    name: "interface-jenkins-updates-downloader"
