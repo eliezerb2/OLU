@@ -42,4 +42,23 @@ env | grep -E "^(UPDATES_DOWNLOADER_)" > "$USER_ENV_PATH"
 chmod 600 "$USER_ENV_PATH"
 chown "$USER_NAME:" "$USER_ENV_PATH"
 
+# Create download directory and set permissions
+if [ ! -z "$UPDATER_DOWNLOAD_DIR" ]; then
+    log_info "Creating download directory $UPDATER_DOWNLOAD_DIR"
+    mkdir -p "$UPDATER_DOWNLOAD_DIR"
+    chmod 775 "$UPDATER_DOWNLOAD_DIR"
+    chown -R "$USER_NAME:" "$UPDATER_DOWNLOAD_DIR"
+fi
+
+# Create log directory and set permissions
+if [ ! -z "$UPDATER_LOG_FILE" ]; then
+    LOG_DIR=$(dirname "$UPDATER_LOG_FILE")
+    log_info "Creating log directory $LOG_DIR"
+    mkdir -p "$LOG_DIR"
+    chmod 775 "$LOG_DIR"
+    touch "$UPDATER_LOG_FILE"
+    chmod 664 "$UPDATER_LOG_FILE"
+    chown -R "$USER_NAME:" "$LOG_DIR"
+fi
+
 log_info "Finished creating Jenkins SSH user $USER_NAME"

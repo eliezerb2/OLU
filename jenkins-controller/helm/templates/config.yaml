@@ -14,3 +14,9 @@ data:
   UPDATES_DOWNLOADER_KEY_FILE_PATH: {{ include "updates-downloader.ssh.host-key-file-path" . | quote }}
   INTERNAL_LINUX_HOST_NAME: {{ .Values.internalLinux.ssh.host }}
   UPDATES_DOWNLOADER_HOST_NAME: {{ .Values.updatesDownloader.ssh.host }}
+  UPDATER_ROCKY_REPO_ID: "appstream"
+  UPDATER_ROCKY_REPO_URL: "https://dl.rockylinux.org/pub/rocky/9/AppStream/x86_64/os/"
+  UPDATER_DOWNLOAD_DIR: "/updates"
+  UPDATER_LOG_FILE: "/var/log/get-updates.log"
+  UPDATER_ARCH: "x86_64"
+  UPDATER_TIMEOUT_SECONDS: "20"
