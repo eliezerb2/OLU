@@ -173,8 +173,8 @@
             "args": [
                 "-File",
                 ".vscode/build-docker.ps1",
-                "-envFilePath", "./nexus/docker/.env",
-                "-dockerfilePath", "./nexus/docker",
+                "-envFilePath", "./nexus-repo/docker/.env",
+                "-dockerfilePath", "./nexus-repo/docker",
                 "-imageTag", "nexus-repo"
             ],
             "group": {
