@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
+  labels:
+    {{- include "interface.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "-10"
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ include "sshKeygenServiceAccountName" . }}
+      restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 0  # Run as root
+      containers:
+        - name: ssh-keygen
+          image: "{{ .Values.sshKeygenJob.image.repository }}:{{ .Values.sshKeygenJob.image.tag }}"
+          imagePullPolicy: {{ .Values.sshKeygenJob.image.imagePullPolicy}}
+          command: ["/bin/bash", "-c", "/scripts/generate-ssh-secrets.sh"]
+          envFrom:
+            - configMapRef:
+                name: {{ include "configMapName" . }}
+          env:
+            - name: ENV_PREFIX_2_REMOVE
+              value: "UPDATES_DOWNLOADER_"
+            - name: SSH_USER_NAME
+              value: {{ .Release.Name }}-{{ .Values.updatesDownloader.ssh.jenkinsUsername }}
+            - name: TARGET_HOST
+              value: {{ .Values.updatesDownloader.ssh.host }}
+            - name: SSH_HOST_KEY_SECRET
+              value: {{ .Release.Name }}-{{ .Values.updatesDownloader.ssh.keySecretName }}
+            - name: SSH_PRIVATE_KEY_SECRET
+              value: {{ .Release.Name }}-{{ .Values.updatesDownloader.ssh.privateKeySecretName }}
+            - name: KNOWN_HOSTS_SECRET
+              value: {{ .Release.Name }}-{{ .Values.updatesDownloader.ssh.knownHostsSecretName }}
