@@ -1,3 +1,12 @@
+{{- define "envFromConfigMaps" -}}
+- configMapRef:
+    name: {{ include "configMapName" . }}
+- configMapRef:
+    name: {{ .Values.interfaces.updatesDownloader.name }}-config
+- configMapRef:
+    name: {{ .Values.interfaces.internalLinux.name }}-config
+{{- end }}
+
 {{- define "secretName" -}}
 {{- $interfaceResponderName := .interfaceResponderName -}}
 {{- $secretName := .secretName -}}

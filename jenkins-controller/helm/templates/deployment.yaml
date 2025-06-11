@@ -20,11 +20,11 @@ spec:
         - name: jenkins
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          envFrom:
-            - configMapRef:
-                name: {{ include "configMapName" . }}
           ports:
             - containerPort: 8080
+          envFrom:
+            {{- include "envFromConfigMaps" . | nindent 12 }}
+          # TODO: do we need these environment variables?
           env:
             - name: JENKINS_ADMIN_ID
               value: "admin"
@@ -41,10 +41,6 @@ spec:
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}          
-            - name: UPDATES_DOWNLOADER_SSH_JENKINS_USERNAME
-              value: "{{ .Values.updatesDownloader.sshJenkinsUsername }}"
-            - name: INTERNAL_LINUX_SSH_JENKINS_USERNAME
-              value: "{{ .Values.internalLinux.ssh.jenkinsUsername }}"
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
@@ -52,8 +48,7 @@ spec:
         - name: setup-ssh
           image: "{{ include "initContainerImage" . }}"
           envFrom:
-            - configMapRef:
-                name: {{ include "configMapName" . }}
+            {{- include "envFromConfigMaps" . | nindent 12 }}
           command: ["sh", "-c"]
           # TODO: convert this to a set of scripts
           # TODO: replace {{ .Values.internalLinux.ssh.hostKeyPath.algorithm }}

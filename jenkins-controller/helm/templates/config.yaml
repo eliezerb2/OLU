@@ -12,3 +12,5 @@ data:
   SSH_FOLDER_PATH: {{ include "sshFolderPath" . | quote }}
   INTERNAL_LINUX_KEY_FILE_PATH: {{ include "internal-linux.ssh.host-key-file-path" . | quote }}
   UPDATES_DOWNLOADER_KEY_FILE_PATH: {{ include "updates-downloader.ssh.host-key-file-path" . | quote }}
+  INTERNAL_LINUX_HOST_NAME: {{ .Values.internalLinux.ssh.host }}
+  UPDATES_DOWNLOADER_HOST_NAME: {{ .Values.updatesDownloader.ssh.host }}
