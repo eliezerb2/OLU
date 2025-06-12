@@ -3,6 +3,9 @@ set -exuo pipefail # Exit immediately if a command exits with a non-zero status 
                   # treat unset variables as a problem (-u),
                   # and return the exit status of the last command in the pipe that failed (-o pipefail).
 
+# Load logging library
+. /app/lib/logging.sh
+
 # --- Configuration Parameters ---
 # These can be passed as environment variables or command-line arguments to the script
 # Example: ./monitor_readiness.sh http://localhost 8080 /healthz 5 3 10
@@ -17,18 +20,18 @@ INITIAL_DELAY_SECONDS="${6:-$INITIAL_DELAY_SECONDS}"
 CONSECUTIVE_FAILURES=0
 PROBE_COUNT=0
 
-echo "Starting readiness probe for ${TARGET_HOST}:${TARGET_PORT}${TARGET_PATH}"
-echo "Check period: ${PERIOD_SECONDS}s, Failure threshold: ${FAILURE_THRESHOLD} consecutive failures."
-echo "Initial delay: ${INITIAL_DELAY_SECONDS}s."
+log_info "Starting readiness probe for ${TARGET_HOST}:${TARGET_PORT}${TARGET_PATH}"
+log_info "Check period: ${PERIOD_SECONDS}s, Failure threshold: ${FAILURE_THRESHOLD} consecutive failures."
+log_info "Initial delay: ${INITIAL_DELAY_SECONDS}s."
 
 if [ "$INITIAL_DELAY_SECONDS" -gt 0 ]; then
-  echo "Waiting for initial delay of ${INITIAL_DELAY_SECONDS} seconds..."
+  log_info "Waiting for initial delay of ${INITIAL_DELAY_SECONDS} seconds..."
   sleep "$INITIAL_DELAY_SECONDS"
 fi
 
 while true; do
   PROBE_COUNT=$((PROBE_COUNT + 1))
-  echo "--- Probe #$PROBE_COUNT ---"
+  log_info "--- Probe #$PROBE_COUNT ---"
 
   # Temporarily disable 'set -e' so curl's non-zero exit code doesn't terminate the script immediately.
   set +e
@@ -45,18 +48,18 @@ while true; do
   fi
 
   if [ "$CURL_EXIT_CODE" -eq 0 ] && [[ "$HTTP_CODE" =~ ^2 ]]; then
-    echo "Probe successful. HTTP Status: ${HTTP_CODE}"
+    log_info "Probe successful. HTTP Status: ${HTTP_CODE}"
     exit 0 # Exit the script successfully, Nexus is ready
   else
-    echo "Probe failed. HTTP Status: ${HTTP_CODE}, Curl Exit Code: ${CURL_EXIT_CODE}"
-    echo "--- CURL VERBOSE OUTPUT START ---" >&2
-    echo "$CURL_VERBOSE_OUTPUT" >&2 # Print the full verbose output for debugging
-    echo "--- CURL VERBOSE OUTPUT END ---" >&2
-    
+    log_warn "Probe failed. HTTP Status: ${HTTP_CODE}, Curl Exit Code: ${CURL_EXIT_CODE}"
+    log_debug "--- CURL VERBOSE OUTPUT START ---"
+    log_debug "$CURL_VERBOSE_OUTPUT" # Print the full verbose output for debugging
+    log_debug "--- CURL VERBOSE OUTPUT END ---"
+
     CONSECUTIVE_FAILURES=$((CONSECUTIVE_FAILURES + 1))
 
     if [ "$CONSECUTIVE_FAILURES" -ge "$FAILURE_THRESHOLD" ]; then
-      echo "BAD: Readiness probe failed ${FAILURE_THRESHOLD} consecutive times. Container is considered NOT READY."
+      log_error "BAD: Readiness probe failed ${FAILURE_THRESHOLD} consecutive times. Container is considered NOT READY."
       exit 1 # Indicate overall failure to the Kubernetes lifecycle
     fi
   fi

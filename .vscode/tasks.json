@@ -237,8 +237,8 @@
                 "-ReleaseName", "nexus-repo",
                 "-ChartPath", "./nexus-repo/helm",
                 "-ValuesFile", "./nexus-repo/helm/values.yaml",
-                "-AppLabel", "nexus",
-                "-LogFilePath", "/nexus-data/init_nexus.log"
+                "-AppLabel", "nexus-repo",
+                "-LogFilePath", "/var/log/init_nexus.log"
             ],
             "group": {
                 "kind": "test",

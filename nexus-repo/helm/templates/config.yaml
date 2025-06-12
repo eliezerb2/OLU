@@ -9,4 +9,5 @@ metadata:
     "helm.sh/hook-weight": "-50"
 data:
   LOG_LEVEL: "DEBUG"
+  LOG_FILE_PATH: "/var/log/init_nexus.log"
   ADMIN_USER: {{ .Values.adminUser.name | quote }}

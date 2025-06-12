@@ -15,39 +15,25 @@ spec:
         app: {{ .Release.Name }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-main
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.nexus.userID }}
+            runAsGroup: {{ .Values.nexus.groupID }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           ports:
-          - containerPort: {{ .Values.service.port }}
+            - containerPort: {{ .Values.service.port }}
+          {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-            {{- if .Values.readinessProbe.enabled }}
             httpGet:
               path: {{ .Values.readinessProbe.path }}
               port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-            {{- end }}
-          envFrom:
-            {{- include "envFromConfigMaps" . | nindent 12 }}
-          resources:
-            requests:
-              memory: {{ .Values.resources.requests.memory }}
-              cpu: {{ .Values.resources.requests.cpu }}
-            limits:
-              memory: {{ .Values.resources.limits.memory }}
-              cpu: {{ .Values.resources.limits.cpu }}
-          volumeMounts:
-          - name: nexus-data
-            mountPath: /nexus-data
-        - name: {{ .Chart.Name }}-init
-          image: {{ .Values.initJobContainer.image.repository }}:{{ .Values.initJobContainer.image.tag }}
-          command: ["/bin/sh", "-c"]
-          args:
-            - /scripts/init_nexus.sh
+          {{- end }}
           env:
             - name: TARGET_HOST
               value: "localhost"
@@ -64,21 +50,35 @@ spec:
           envFrom:
             {{- include "envFromConfigMaps" . | nindent 12 }}
           volumeMounts:
-            - name: nexus-scripts
-              mountPath: /scripts
-              readOnly: true
-            - name: {{ .Values.adminPassword.secretName }}
-              mountPath: /tmp/{{ .Values.adminPassword.secretName }}
-              readOnly: true
             - name: nexus-data
               mountPath: /nexus-data
+            {{- include "volumeMounts.tmpMemVolumeMount" . | nindent 12 }}
+      initContainers:
+        - name: {{ .Chart.Name }}-init
+          image: {{ .Values.initJobContainer.image.repository }}:{{ .Values.initJobContainer.image.tag }}
+          securityContext:
+            runAsUser: 0       # Run as root to allow chown
+            runAsGroup: 0
+            allowPrivilegeEscalation: true
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cp {{ include "adminPasswordMountPath" . }}/{{ .Values.adminPassword.keyName }} {{ include "tmpMemAdminPasswordFilePath" . }}
+              chmod 600 {{ include "tmpMemAdminPasswordFilePath" . }} && \
+              chown {{ .Values.nexus.userID }}:{{ .Values.nexus.groupID }} {{ include "tmpMemAdminPasswordFilePath" . }}
+          envFrom:
+            {{- include "envFromConfigMaps" . | nindent 12 }}
+          volumeMounts:
+            - name: {{ .Values.adminPassword.secretName }}
+              mountPath: {{ include "adminPasswordMountPath" . | quote }}
+              readOnly: true
+            {{- include "volumeMounts.tmpMemVolumeMount" . | nindent 12 }}
       volumes:
-        - name: nexus-scripts
-          configMap:
-            name: nexus-scripts
-            defaultMode: 0755 # make the scripts executable
         - name: {{ .Values.adminPassword.secretName }}
           secret:
             secretName: {{ .Values.adminPassword.secretName }}
+        - name: {{ include "tmpMemVolumeName" . | quote }}
+          emptyDir:
+            medium: Memory
         - name: nexus-data
           emptyDir: {}

@@ -39,3 +39,6 @@ adminUser:
 adminPassword:
   secretName: admin-password
   keyName: password
+nexus:
+  userID: 200
+  groupID: 200
