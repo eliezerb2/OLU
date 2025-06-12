@@ -1,6 +1,51 @@
 {
     "version": "2.0.0",
+    "inputs": [
+        {
+        "id": "adminPassword",
+        "type": "promptString",
+        "description": "Enter admin password:",
+        "password": true  // Masks input with asterisks (*)
+        }
+    ],
     "tasks": [
+        { "label": "create admin password",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/set-kubernetes-secret.ps1",
+                "--Command", "set"
+            ],
+            "options": {
+                "env": {
+                    "SECRET_NAME": "admin-password",
+                    "SECRET_NAMESPACE": "default",
+                    "SECRET_KEY_NAME": "password",
+                    "SECRET_VALUE": "${input:adminPassword}"
+                }
+            },
+            "group": "test",
+            "problemMatcher": []
+        },
+        { "label": "del admin password",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-File",
+                ".vscode/set-kubernetes-secret.ps1",
+                "--Command", "del"
+            ],
+            "options": {
+                "env": {
+                    "SECRET_NAME": "admin-password",
+                    "SECRET_NAMESPACE": "default",
+                    "SECRET_KEY_NAME": "password",
+                }
+            },
+            "group": "test",
+            "problemMatcher": []
+        },
         { "label": "All - Stop",
             "type": "shell",
             "command": "powershell",
