@@ -14,7 +14,7 @@ service:
 readinessProbe:
   enabled: true
   path: /service/rest/v1/status
-  initialDelaySeconds: 90  # Allow slow initial startup
+  initialDelaySeconds: 60  # Allow slow initial startup
   periodSeconds: 20
   failureThreshold: 6
 env:

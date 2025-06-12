@@ -43,6 +43,42 @@ spec:
           volumeMounts:
           - name: nexus-data
             mountPath: /nexus-data
+        - name: {{ .Chart.Name }}-init
+          image: {{ .Values.initJobContainer.image.repository }}:{{ .Values.initJobContainer.image.tag }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - /scripts/init_nexus.sh
+          env:
+            - name: TARGET_HOST
+              value: "localhost"
+            - name: TARGET_PORT
+              value: {{ .Values.service.port | quote }}
+            - name: TARGET_PATH
+              value: {{ .Values.readinessProbe.path | quote }}
+            - name: PERIOD_SECONDS
+              value: {{ .Values.readinessProbe.periodSeconds | quote }}
+            - name: FAILURE_THRESHOLD
+              value: {{ .Values.readinessProbe.failureThreshold | quote }}
+            - name: INITIAL_DELAY_SECONDS
+              value: {{ .Values.readinessProbe.initialDelaySeconds | quote }}
+          envFrom:
+            {{- include "envFromConfigMaps" . | nindent 12 }}
+          volumeMounts:
+            - name: nexus-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: {{ .Values.adminPassword.secretName }}
+              mountPath: /tmp/{{ .Values.adminPassword.secretName }}
+              readOnly: true
+            - name: nexus-data
+              mountPath: /nexus-data
       volumes:
+        - name: nexus-scripts
+          configMap:
+            name: nexus-scripts
+            defaultMode: 0755 # make the scripts executable
+        - name: {{ .Values.adminPassword.secretName }}
+          secret:
+            secretName: {{ .Values.adminPassword.secretName }}
         - name: nexus-data
           emptyDir: {}
