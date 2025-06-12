@@ -26,7 +26,14 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.port }}
-        env: []
+        envFrom:
+          {{- include "envFromConfigMaps" . | nindent 12 }}
+        env:
+          - name: ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.adminPassword.secretName }}
+                key: {{ .Values.adminPassword.keyName }}
         resources:
           requests:
             memory: {{ .Values.resources.requests.memory }}

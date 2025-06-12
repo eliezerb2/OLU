@@ -246,7 +246,7 @@
             },
             "problemMatcher": []
         },
-        { "label": "Nexus - Stop Repository",
+        { "label": "Nexus - uninstall",
             "dependsOn": [],
             "type": "shell",
             "command": "powershell",

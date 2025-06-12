@@ -1,7 +1,7 @@
 #!/bin/sh
 # nexus_initial_login: Performs the first login to Nexus to trigger password file removal
-NEXUS_PORT=${NEXUS_PORT:-8081}
-ADMIN_USER=${ADMIN_USER:-admin}
+NEXUS_PORT=${NEXUS_PORT}
+ADMIN_USER=${ADMIN_USER}
 DEFAULT_PASSWORD=$(cat /nexus-data/admin.password)
 LOGIN_URL="http://localhost:${NEXUS_PORT}/service/rest/v1/security/users"
 LOGIN_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
