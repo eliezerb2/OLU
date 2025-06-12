@@ -1,63 +1,48 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ .Release.Name }}-{{ include "get.filename" . }}
   labels:
-    app: nexus
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: nexus
-      release: {{ .Release.Name }}
+      app: {{ .Release.Name }}
   template:
     metadata:
-      name: nexus-pod
       labels:
-        app: nexus
-        release: {{ .Release.Name }}
+        app: {{ .Release.Name }}
     spec:
       containers:
-      - name: nexus
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-        - containerPort: {{ .Values.service.port }}
-        envFrom:
-          {{- include "envFromConfigMaps" . | nindent 12 }}
-        env:
-          - name: ADMIN_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.adminPassword.secretName }}
-                key: {{ .Values.adminPassword.keyName }}
-        resources:
-          requests:
-            memory: {{ .Values.resources.requests.memory }}
-            cpu: {{ .Values.resources.requests.cpu }}
-          limits:
-            memory: {{ .Values.resources.limits.memory }}
-            cpu: {{ .Values.resources.limits.cpu }}
-        volumeMounts:
-        - name: nexus-data
-          mountPath: /nexus-data
-        - name: nexus-scripts
-          mountPath: /scripts
-          readOnly: true
-        lifecycle:
-          postStart:
-            exec:
-              command:
-                - "/bin/sh"
-                - "-c"
-                - "/scripts/init_nexus.sh &"
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+          - containerPort: {{ .Values.service.port }}
+          readinessProbe:
+            {{- if .Values.readinessProbe.enabled }}
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            {{- end }}
+          envFrom:
+            {{- include "envFromConfigMaps" . | nindent 12 }}
+          resources:
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
+          volumeMounts:
+          - name: nexus-data
+            mountPath: /nexus-data
       volumes:
-      - name: nexus-data
-        emptyDir: {}
-      - name: nexus-scripts
-        configMap:
-          name: nexus-scripts
-          defaultMode: 0755
+        - name: nexus-data
+          emptyDir: {}

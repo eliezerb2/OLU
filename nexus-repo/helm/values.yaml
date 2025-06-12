@@ -3,12 +3,20 @@ image:
   repository: nexus-repo
   tag: "latest"
   pullPolicy: IfNotPresent
+initJobContainer:
+  image:
+    repository: curlimages/curl
+    tag: "8.8.0"
 service:
   type: NodePort
   port: 8081
   nodePort: 32009
-  timeout: 300
-  checkNexusReadySleep: 5
+readinessProbe:
+  enabled: true
+  path: /service/rest/v1/status
+  initialDelaySeconds: 90  # Allow slow initial startup
+  periodSeconds: 20
+  failureThreshold: 6
 env:
   NEXUS_CONTEXT: /nexus      
 resources:
@@ -30,4 +38,4 @@ adminUser:
   name: "admin"
 adminPassword:
   secretName: admin-password
-  keyName: password 
+  keyName: password

@@ -9,7 +9,4 @@ metadata:
     "helm.sh/hook-weight": "-50"
 data:
   LOG_LEVEL: "DEBUG"
-  CHECK_NEXUS_READY_TIMEOUT: {{ .Values.service.timeout | quote }}
-  CHECK_NEXUS_READY_SLEEP: {{ .Values.service.checkNexusReadySleep | quote }}
-  NEXUS_PORT: {{ .Values.service.port | quote }}
   ADMIN_USER: {{ .Values.adminUser.name | quote }}
