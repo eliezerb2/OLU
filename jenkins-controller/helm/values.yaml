@@ -12,20 +12,19 @@ persistence:
   storageClass: local-path
   accessMode: ReadWriteOnce
   size: 8Gi
-adminPassword: "admin"
 resources: {}
 configMap:
   name: "config"
 jenkins:
   homePath: /var/jenkins_home
   sshFolderName: .ssh
-env1:
-  - name: ADMIN_USER
-    value: "admin"
-  - name: ADMIN_PASSWORD
-    value: "newpassword"
 interfaces:
   internalLinux:
     name: "interface-jenkins-internal-linux"
   updatesDownloader:
     name: "interface-jenkins-updates-downloader"
+adminUser:
+  name: "admin"
+adminPassword:
+  secretName: admin-password
+  keyName: password 

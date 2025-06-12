@@ -26,21 +26,15 @@ spec:
             {{- include "envFromConfigMaps" . | nindent 12 }}
           # TODO: do we need these environment variables?
           env:
-            - name: JENKINS_ADMIN_ID
-              value: "admin"
-            - name: JENKINS_ADMIN_PASSWORD
+            - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-admin
-                  key: password
+                  name: {{ .Values.adminPassword.secretName }}
+                  key: {{ .Values.adminPassword.keyName }}
             {{- range .Values.env0 }}
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}
-            {{- range .Values.env1 }}
-            - name: {{ .name | quote }}
-              value: {{ .value | quote }}
-            {{- end }}          
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
